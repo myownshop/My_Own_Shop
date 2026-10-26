@@ -1,0 +1,7 @@
+{
+  "name": "MyOwnShop",
+  "description": "Multi-network marketplace & logistics platform powered by IBOHub. Distinct IBO, Delivery Agent, and Merchant networks featuring double-entry ledger accounting, 3-tier commission engine, 15/15/20 failed delivery protocol, and 90-day customer attribution.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
