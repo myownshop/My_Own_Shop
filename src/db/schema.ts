@@ -159,3 +159,12 @@ export const platformConfig = pgTable('platform_config', {
   configJson: text('config_json').notNull(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+// 11. Customer Wishlists Table
+export const wishlists = pgTable('wishlists', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  productId: text('product_id').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+

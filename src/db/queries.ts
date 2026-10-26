@@ -1,6 +1,6 @@
 import { db } from './index.ts';
-import { users, merchants, products, ibos, iboListings, agents, orders, ledger, kycSubmissions, platformConfig } from './schema.ts';
-import { eq, desc } from 'drizzle-orm';
+import { users, merchants, products, ibos, iboListings, agents, orders, ledger, kycSubmissions, platformConfig, wishlists } from './schema.ts';
+import { eq, desc, and } from 'drizzle-orm';
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.SQL_HOST && process.env.SQL_USER && process.env.SQL_DB_NAME);
@@ -154,3 +154,43 @@ export async function insertDbLedgerEntry(entryData: typeof ledger.$inferInsert)
     return inserted[0] || fallbackEntry;
   }, fallbackEntry);
 }
+
+// 7. Customer Wishlist Queries
+export async function getDbWishlistByUser(userId: string) {
+  return withDbFallback(async () => {
+    return await db
+      .select()
+      .from(wishlists)
+      .where(eq(wishlists.userId, userId))
+      .orderBy(desc(wishlists.createdAt));
+  }, []);
+}
+
+export async function addDbWishlistItem(userId: string, productId: string) {
+  const id = `wish-${userId}-${productId}`;
+  const fallbackItem = {
+    id,
+    userId,
+    productId,
+    createdAt: new Date(),
+  };
+
+  return withDbFallback(async () => {
+    const inserted = await db
+      .insert(wishlists)
+      .values({ id, userId, productId })
+      .onConflictDoNothing()
+      .returning();
+    return inserted[0] || fallbackItem;
+  }, fallbackItem);
+}
+
+export async function removeDbWishlistItem(userId: string, productId: string) {
+  return withDbFallback(async () => {
+    await db
+      .delete(wishlists)
+      .where(and(eq(wishlists.userId, userId), eq(wishlists.productId, productId)));
+    return true;
+  }, true);
+}
+

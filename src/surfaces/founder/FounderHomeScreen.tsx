@@ -102,65 +102,107 @@ export const FounderHomeScreen: React.FC<FounderHomeScreenProps> = ({ onNavigate
           </ul>
         </aside>
 
-        {/* Center Hero Banner Carousel (3 flat colored promo banners with real offer text) */}
-        <div className="lg:col-span-6 bg-dark text-surface border border-line rounded p-5 sm:p-6 flex flex-col justify-between min-h-[280px] sm:min-h-[340px]">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2 text-[12px] text-primary font-bold tracking-wide uppercase">
-              <span>{currentBanner.tag}</span>
-              <span className="text-muted font-normal">{currentBanner.badgeText}</span>
+        {/* Center Hero Banner Carousel with background image and featured product images */}
+        <div className="lg:col-span-6 relative bg-dark text-white border border-line rounded overflow-hidden flex flex-col justify-between min-h-[340px] sm:min-h-[380px]">
+          {/* Background Hero Image + Readability Scrim */}
+          <img
+            src={currentBanner.imageUrl}
+            alt={currentBanner.headline}
+            className="absolute inset-0 w-full h-full object-cover opacity-40 transition-opacity duration-500"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-r from-[#0B1410]/95 via-[#0B1410]/85 to-[#0B1410]/55"
+          />
+
+          {/* Top Content + Featured Product Image Strip */}
+          <div className="relative z-10 p-5 sm:p-6 flex-1 flex flex-col justify-between gap-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-2 text-[12px] text-primary font-bold tracking-wide uppercase">
+                <span>{currentBanner.tag}</span>
+                <span className="text-white/80 font-medium">{currentBanner.badgeText}</span>
+              </div>
+
+              <h1 className="text-[22px] sm:text-[26px] font-bold leading-tight text-white max-w-xl">
+                {currentBanner.headline}
+              </h1>
+
+              <p className="text-[13px] sm:text-[14px] text-white/80 max-w-lg">
+                {currentBanner.subtext}
+              </p>
             </div>
 
-            <h1 className="page-title text-surface max-w-xl">
-              {currentBanner.headline}
-            </h1>
-
-            <p className="text-[14px] text-muted max-w-lg">
-              {currentBanner.subtext}
-            </p>
-          </div>
-
-          <div className="pt-6 flex flex-wrap items-center justify-between gap-4 border-t border-muted/30 mt-6">
-            <button
-              type="button"
-              onClick={() => onNavigate(currentBanner.ctaLink)}
-              className="h-10 px-5 bg-primary hover:bg-primary-dark text-on-primary font-bold text-[14px] rounded flex items-center gap-2 transition-colors cursor-pointer"
-            >
-              <span>{currentBanner.ctaText}</span>
-              <ChevronRight className="w-5 h-5" strokeWidth={1.75} />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="Previous slide"
-                onClick={() =>
-                  setActiveSlide((prev) => (prev - 1 + PROMO_BANNERS.length) % PROMO_BANNERS.length)
-                }
-                className="w-9 h-9 border border-muted/40 rounded flex items-center justify-center text-surface hover:border-primary cursor-pointer"
-              >
-                <ChevronLeft className="w-5 h-5" strokeWidth={1.75} />
-              </button>
-              <div className="flex items-center gap-1.5 px-1">
-                {PROMO_BANNERS.map((b, idx) => (
+            {/* Featured Product Images Row inside the Hero */}
+            {currentBanner.featuredItems && currentBanner.featuredItems.length > 0 && (
+              <div className="grid grid-cols-3 gap-2.5 pt-1">
+                {currentBanner.featuredItems.map((item) => (
                   <button
-                    key={b.id}
+                    key={item.id}
                     type="button"
-                    aria-label={`Slide ${idx + 1}`}
-                    onClick={() => setActiveSlide(idx)}
-                    className={`h-2 rounded transition-all cursor-pointer ${
-                      idx === activeSlide ? 'w-6 bg-primary' : 'w-2 bg-muted'
-                    }`}
-                  />
+                    onClick={() => onNavigate(`/product/${item.id}`)}
+                    className="group bg-white/10 hover:bg-white/15 border border-white/20 hover:border-primary rounded p-2 flex items-center gap-2.5 text-left transition-colors cursor-pointer"
+                  >
+                    <img
+                      src={item.imageUrl}
+                      alt={item.label}
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded object-cover shrink-0 bg-surface border border-white/20"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] sm:text-[12px] font-bold text-white truncate group-hover:text-primary">
+                        {item.label}
+                      </div>
+                      <div className="text-[11px] text-primary font-bold tabular-nums mt-0.5">
+                        {item.price}
+                      </div>
+                    </div>
+                  </button>
                 ))}
               </div>
+            )}
+
+            <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/15">
               <button
                 type="button"
-                aria-label="Next slide"
-                onClick={() => setActiveSlide((prev) => (prev + 1) % PROMO_BANNERS.length)}
-                className="w-9 h-9 border border-muted/40 rounded flex items-center justify-center text-surface hover:border-primary cursor-pointer"
+                onClick={() => onNavigate(currentBanner.ctaLink)}
+                className="h-10 px-5 bg-primary hover:bg-primary-dark text-on-primary font-bold text-[14px] rounded flex items-center gap-2 transition-colors cursor-pointer"
               >
+                <span>{currentBanner.ctaText}</span>
                 <ChevronRight className="w-5 h-5" strokeWidth={1.75} />
               </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Previous slide"
+                  onClick={() =>
+                    setActiveSlide((prev) => (prev - 1 + PROMO_BANNERS.length) % PROMO_BANNERS.length)
+                  }
+                  className="w-9 h-9 border border-white/25 rounded flex items-center justify-center text-white hover:border-primary cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5" strokeWidth={1.75} />
+                </button>
+                <div className="flex items-center gap-1.5 px-1">
+                  {PROMO_BANNERS.map((b, idx) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      aria-label={`Slide ${idx + 1}`}
+                      onClick={() => setActiveSlide(idx)}
+                      className={`h-2 rounded transition-all cursor-pointer ${
+                        idx === activeSlide ? 'w-6 bg-primary' : 'w-2 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  aria-label="Next slide"
+                  onClick={() => setActiveSlide((prev) => (prev + 1) % PROMO_BANNERS.length)}
+                  className="w-9 h-9 border border-white/25 rounded flex items-center justify-center text-white hover:border-primary cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5" strokeWidth={1.75} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -169,11 +211,20 @@ export const FounderHomeScreen: React.FC<FounderHomeScreenProps> = ({ onNavigate
         <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
           <div className="bg-surface border border-line rounded p-4 flex flex-col justify-between">
             <div>
-              <div className="text-[12px] font-bold text-primary-dark uppercase">
-                For Sellers
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=240&q=80"
+                  alt="Sell on IBO Hub"
+                  className="w-12 h-12 rounded object-cover border border-line shrink-0"
+                />
+                <div>
+                  <div className="text-[11px] font-bold text-primary-dark uppercase">
+                    For Sellers
+                  </div>
+                  <h2 className="section-title">Sell on IBO Hub</h2>
+                </div>
               </div>
-              <h2 className="section-title mt-1">Sell on IBO Hub</h2>
-              <p className="text-[12px] text-muted mt-1">
+              <p className="text-[12px] text-muted mt-2">
                 List your products for free. Get paid as soon as your customer receives their order.
               </p>
             </div>
@@ -189,11 +240,20 @@ export const FounderHomeScreen: React.FC<FounderHomeScreenProps> = ({ onNavigate
 
           <div className="bg-surface border border-line rounded p-4 flex flex-col justify-between">
             <div>
-              <div className="text-[12px] font-bold text-primary-dark uppercase">
-                For Riders &amp; Drivers
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1617347454431-f49d7ff5c3b1?auto=format&fit=crop&w=240&q=80"
+                  alt="Earn as a delivery agent"
+                  className="w-12 h-12 rounded object-cover border border-line shrink-0"
+                />
+                <div>
+                  <div className="text-[11px] font-bold text-primary-dark uppercase">
+                    For Riders &amp; Drivers
+                  </div>
+                  <h2 className="section-title">Earn as a delivery agent</h2>
+                </div>
               </div>
-              <h2 className="section-title mt-1">Earn as a delivery agent</h2>
-              <p className="text-[12px] text-muted mt-1">
+              <p className="text-[12px] text-muted mt-2">
                 Pick up ready packages with your bike, car, or van. Get paid right after you deliver.
               </p>
             </div>

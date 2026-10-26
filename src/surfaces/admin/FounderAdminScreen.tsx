@@ -17,6 +17,7 @@ import { platformStore } from '../../services/store';
 import { PlatformConfig } from '../../config/platformConfig';
 import { FinancialOverview } from './FinancialOverview';
 import { useAuth } from '../../context/AuthContext';
+import { PlatformLogo } from '../../components/PlatformLogo';
 
 interface FounderAdminScreenProps {
   onNavigate: (path: string) => void;
@@ -73,9 +74,12 @@ export const FounderAdminScreen: React.FC<FounderAdminScreenProps> = ({ onNaviga
       {/* Dark Left Sidebar (#14181F) */}
       <aside className="w-full md:w-60 bg-dark text-white shrink-0 flex flex-col justify-between border-b md:border-b-0 md:border-r border-line">
         <div>
-          <div className="p-4 border-b border-white/10">
-            <div className="text-[15px] font-bold text-white">Founder Admin</div>
-            <div className="text-[11px] text-white/60">Operations & Escrow Center</div>
+          <div className="p-4 border-b border-white/10 space-y-2.5">
+            <PlatformLogo onNavigate={onNavigate} variant="dark" size="sm" />
+            <div>
+              <div className="text-[13px] font-bold text-white">Founder Admin</div>
+              <div className="text-[11px] text-white/60">Operations &amp; Escrow Center</div>
+            </div>
           </div>
 
           <nav className="py-2 flex md:flex-col overflow-x-auto">

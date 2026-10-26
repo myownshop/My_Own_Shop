@@ -23,6 +23,7 @@ import {
 import { platformStore } from '../../services/store';
 import { IboProfile, IboListing, ReferralNode, IboCapacityTier } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { PlatformLogo } from '../../components/PlatformLogo';
 
 interface IboDashboardScreenProps {
   onNavigate: (path: string) => void;
@@ -228,16 +229,19 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
       {/* Dark Left Sidebar (#14181F) */}
       <aside className="w-full md:w-60 bg-dark text-white shrink-0 flex flex-col justify-between border-b md:border-b-0 md:border-r border-line">
         <div>
-          <div className="p-4 border-b border-white/10 flex items-center justify-between">
+          <div className="p-4 border-b border-white/10 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <PlatformLogo onNavigate={onNavigate} variant="dark" size="sm" />
+              <span className="px-2 py-0.5 rounded bg-primary text-on-primary text-[10px] font-bold uppercase">
+                {tierConfig.name.split(' ')[0]}
+              </span>
+            </div>
             <div>
-              <div className="text-[15px] font-bold text-white">IBO Dashboard</div>
-              <div className="text-[11px] text-white/60 truncate max-w-[140px]">
+              <div className="text-[13px] font-bold text-white">IBO Dashboard</div>
+              <div className="text-[11px] text-white/60 truncate max-w-[180px]">
                 {ibo.name} ({ibo.iboNumber})
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded bg-primary text-on-primary text-[10px] font-bold uppercase">
-              {tierConfig.name.split(' ')[0]}
-            </span>
           </div>
 
           <nav className="py-2 flex md:flex-col overflow-x-auto">

@@ -11,9 +11,11 @@ import {
   ShieldCheck,
   Truck,
   CreditCard,
+  Heart,
 } from 'lucide-react';
-import { MARKETPLACE_CATEGORIES, cartStore } from '../data/marketplaceData';
+import { MARKETPLACE_CATEGORIES, cartStore, wishlistStore } from '../data/marketplaceData';
 import { useAuth } from '../context/AuthContext';
+import { PlatformLogo } from './PlatformLogo';
 
 interface MarketplaceLayoutProps {
   currentPath: string;
@@ -27,7 +29,12 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
   children,
 }) => {
   const { currentAppUser, userProfile, signOutUser } = useAuth();
+  const activeUserId = currentAppUser?.id || userProfile?.userId || null;
+
   const [cartCount, setCartCount] = useState<number>(() => cartStore.getTotalCount());
+  const [wishlistCount, setWishlistCount] = useState<number>(() =>
+    wishlistStore.getCount(activeUserId)
+  );
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -39,6 +46,17 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (activeUserId) {
+      wishlistStore.hydrateFromServer(activeUserId);
+    }
+    setWishlistCount(wishlistStore.getCount(activeUserId));
+    const unsubscribe = wishlistStore.subscribe(() => {
+      setWishlistCount(wishlistStore.getCount(activeUserId));
+    });
+    return () => unsubscribe();
+  }, [activeUserId]);
 
   useEffect(() => {
     const params = new URLSearchParams(
@@ -80,6 +98,9 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
   const activeCategorySlug = currentPath.startsWith('/category/')
     ? currentPath.replace('/category/', '').split('?')[0]
     : '';
+  const isWishlistPage =
+    currentPath.split('?')[0] === '/wishlist' ||
+    currentPath.split('?')[0] === '/my-wishlist';
 
   return (
     <div className="min-h-screen flex flex-col bg-page text-ink">
@@ -127,6 +148,14 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
               <span aria-hidden="true">|</span>
               <button
                 type="button"
+                onClick={() => onNavigate('/wishlist')}
+                className="hover:underline cursor-pointer"
+              >
+                My Wishlist
+              </button>
+              <span aria-hidden="true">·</span>
+              <button
+                type="button"
                 onClick={() => onNavigate('/track-order')}
                 className="hover:underline cursor-pointer"
               >
@@ -162,13 +191,7 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                     <Menu className="w-5 h-5" strokeWidth={1.75} />
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('/')}
-                  className="text-[24px] font-bold tracking-tight text-primary-dark leading-none py-1 cursor-pointer"
-                >
-                  IBO Hub
-                </button>
+                <PlatformLogo onNavigate={onNavigate} size="lg" />
               </div>
 
               {/* Desktop Wide Centered Search Bar */}
@@ -212,7 +235,7 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                 </div>
               </form>
 
-              {/* Right Actions: Account, Cart, Help */}
+              {/* Right Actions: Account, My Wishlist, Help, Cart */}
               <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 {currentAppUser || userProfile ? (
                   <div className="flex items-center gap-1">
@@ -224,7 +247,7 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                         else if (role === 'ibo') onNavigate('/ibo/dashboard');
                         else if (role === 'agent') onNavigate('/agent/dashboard');
                         else if (role === 'founder') onNavigate('/admin');
-                        else onNavigate('/login');
+                        else onNavigate('/wishlist');
                       }}
                       className="h-11 md:h-10 px-2.5 rounded flex items-center gap-1.5 text-[14px] font-medium text-ink hover:bg-primary-tint cursor-pointer"
                     >
@@ -251,6 +274,29 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                     <span className="hidden sm:inline">Account</span>
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/wishlist')}
+                  className={`h-11 md:h-10 px-2.5 rounded flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${
+                    isWishlistPage
+                      ? 'bg-primary-tint text-on-primary border border-primary-dark font-bold'
+                      : 'text-ink hover:bg-primary-tint'
+                  }`}
+                >
+                  <Heart
+                    className={`w-5 h-5 ${
+                      wishlistCount > 0 ? 'text-sale fill-sale' : 'text-ink'
+                    }`}
+                    strokeWidth={1.75}
+                  />
+                  <span className="hidden sm:inline">My Wishlist</span>
+                  {activeUserId && wishlistCount > 0 && (
+                    <span className="px-1.5 py-0.5 bg-sale text-surface text-[11px] font-bold rounded leading-none">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
 
                 <button
                   type="button"
@@ -328,6 +374,33 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
           <div className="md:hidden bg-surface border-t border-line px-4 py-3 space-y-4">
             <div>
               <div className="text-[12px] font-bold text-muted uppercase mb-2">
+                My Account &amp; Saved Items
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('/wishlist');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full h-11 px-3 rounded border border-line text-left text-[14px] font-bold text-ink hover:bg-primary-tint flex items-center justify-between cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <Heart
+                    className={`w-4 h-4 ${
+                      wishlistCount > 0 ? 'text-sale fill-sale' : 'text-primary-dark'
+                    }`}
+                    strokeWidth={1.75}
+                  />
+                  <span>My Wishlist</span>
+                </span>
+                <span className="text-[12px] text-muted">
+                  {activeUserId ? `${wishlistCount} saved` : 'Sign in'}
+                </span>
+              </button>
+            </div>
+
+            <div>
+              <div className="text-[12px] font-bold text-muted uppercase mb-2">
                 Categories
               </div>
               <div className="grid grid-cols-2 gap-1.5">
@@ -400,6 +473,15 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
             <div>
               <h3 className="text-[14px] font-bold text-surface mb-3">Customer Care</h3>
               <ul className="space-y-2 text-[12px] text-muted">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('/wishlist')}
+                    className="hover:text-primary cursor-pointer text-left"
+                  >
+                    My Wishlist
+                  </button>
+                </li>
                 <li>
                   <button
                     type="button"
@@ -592,9 +674,10 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
             </div>
           </div>
 
-          {/* Bottom Bar: Social links, copyright, country selector */}
+          {/* Bottom Bar: Logo, Social links, copyright, country selector */}
           <div className="mt-6 pt-4 border-t border-muted/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[12px] text-muted">
             <div className="flex flex-wrap items-center gap-4">
+              <PlatformLogo onNavigate={onNavigate} variant="dark" size="sm" />
               <span>© 2026 IBO Hub Marketplace Ltd. All rights reserved.</span>
               <div className="flex items-center gap-3">
                 <a

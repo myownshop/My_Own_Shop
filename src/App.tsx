@@ -7,6 +7,7 @@ import { CategorySearchScreen } from './surfaces/customer/CategorySearchScreen';
 import { ProductDetailScreen } from './surfaces/customer/ProductDetailScreen';
 import { CartScreen } from './surfaces/customer/CartScreen';
 import { CheckoutScreen } from './surfaces/customer/CheckoutScreen';
+import { WishlistScreen } from './surfaces/customer/WishlistScreen';
 import { CustomerShopScreen } from './surfaces/customer/CustomerShopScreen';
 import { IboDashboardScreen } from './surfaces/ibo/IboDashboardScreen';
 import { MerchantPortalScreen } from './surfaces/merchant/MerchantPortalScreen';
@@ -26,9 +27,9 @@ function getPageMetadata(path: string): { title: string; description: string } {
   const clean = path.split('?')[0] || '/';
   if (clean === '/') {
     return {
-      title: 'IBO Hub — Nigeria Online Marketplace for Phones, Groceries, Electronics & Wholesale',
+      title: 'IBO Hub – Nigeria Online Marketplace for Phones, Groceries & Solar',
       description:
-        'Shop phones, electronics, groceries, appliances, and fashion from verified Nigerian merchants. Free delivery on orders over ₦20,000.',
+        'Shop phones, solar gear, 50kg bulk groceries, and fashion from trusted Nigerian sellers on IBO Hub. Free delivery over ₦20,000 and safe payment on delivery.',
     };
   }
   if (clean.startsWith('/shop/')) {
@@ -38,7 +39,9 @@ function getPageMetadata(path: string): { title: string; description: string } {
     const storeName = matched?.shopBranding?.storeName || 'Verified Retail Storefront';
     return {
       title: `${storeName} — Official Online Store`,
-      description: matched?.shopBranding?.tagline || 'Escrow-protected retail shopping and nationwide delivery.',
+      description:
+        matched?.shopBranding?.tagline ||
+        'Safe online shopping with doorstep delivery and payment protection.',
     };
   }
   if (clean.startsWith('/category/')) {
@@ -47,90 +50,97 @@ function getPageMetadata(path: string): { title: string; description: string } {
     const sub = parts[1] ? ` (${parts[1].replace(/-/g, ' ')})` : '';
     return {
       title: `${slug.charAt(0).toUpperCase() + slug.slice(1)}${sub} — Shop on IBO Hub`,
-      description: `Browse verified ${slug} deals in Naira with escrow protection and fast delivery across Nigeria.`,
+      description: `Browse verified ${slug} deals in Naira with safe payment protection and fast delivery across Nigeria.`,
     };
   }
   if (clean.startsWith('/store/') || clean === '/merchants') {
     return {
-      title: 'Verified Merchant Storefront — IBO Hub Marketplace',
-      description: 'Shop directly from CAC and NAFDAC verified Nigerian wholesale merchants.',
+      title: 'Trusted Sellers — IBO Hub Marketplace',
+      description: 'Shop directly from verified Nigerian sellers with fast nationwide delivery.',
     };
   }
   if (clean.startsWith('/search')) {
     return {
       title: 'Search Products — IBO Hub Marketplace',
-      description: 'Filter products by price, brand, rating, seller type, and Nigerian state.',
+      description: 'Find products by price, brand, customer rating, seller, and Nigerian state.',
     };
   }
   if (clean.startsWith('/product/')) {
     return {
       title: 'Product Details — IBO Hub Marketplace',
-      description: 'View product specifications, verified buyer reviews, seller rating, and delivery options.',
+      description: 'View product details, verified buyer reviews, seller rating, and delivery options.',
     };
   }
   if (clean === '/cart') {
     return {
       title: 'Shopping Cart — IBO Hub',
-      description: 'Review your items grouped by verified seller and proceed to escrow checkout.',
+      description: 'Review your items and proceed to safe checkout with doorstep delivery.',
+    };
+  }
+  if (clean === '/wishlist' || clean === '/my-wishlist') {
+    return {
+      title: 'My Wishlist — IBO Hub',
+      description: 'View and manage the products saved to your private customer wishlist.',
     };
   }
   if (clean === '/checkout') {
     return {
-      title: 'Secure Checkout — IBO Hub',
-      description: 'Complete your delivery address, shipping method, and escrow-protected payment.',
+      title: 'Safe Checkout — IBO Hub',
+      description: 'Complete your delivery address, shipping method, and protected payment.',
     };
   }
   if (clean === '/login' || clean === '/signin') {
     return {
       title: 'Sign In — IBO Hub',
-      description: 'Sign in to your Customer, Merchant, IBO, or Delivery Agent account.',
+      description: 'Sign in to your Customer, Seller, Shop Owner, or Delivery Agent account.',
     };
   }
   if (clean === '/signup') {
     return {
       title: 'Create Customer Account — IBO Hub',
-      description: 'Register as a Customer on IBO Hub.',
+      description: 'Create a free customer account on IBO Hub to shop, save items, and track orders.',
     };
   }
   if (clean === '/sell' || clean.startsWith('/merchant/join') || clean.startsWith('/merchant/signup')) {
     return {
-      title: 'Sell on IBO Hub — Wholesale & Retail Merchant Onboarding',
-      description: 'List your products on IBO Hub with ₦0/month Free Tier and T+1 Nigerian bank payouts.',
+      title: 'Sell on IBO Hub — Start Selling Online',
+      description: 'List your products on IBO Hub for free and get fast Nigerian bank payouts after delivery.',
     };
   }
   if (clean === '/become-an-ibo' || clean.startsWith('/join') || clean.startsWith('/ibo/')) {
     return {
-      title: 'Become an IBO — Independent Business Owner on IBO Hub',
-      description: 'Launch a white-label storefront with up to 50% retail markup and zero inventory risk.',
+      title: 'Become an IBO — Open Your Own Online Shop on IBO Hub',
+      description: 'Open your own online shop with products from trusted suppliers without buying stock upfront.',
     };
   }
   if (clean === '/become-a-delivery-agent' || clean.startsWith('/agent/join') || clean.startsWith('/agent/signup')) {
     return {
-      title: 'Become a Delivery Agent — IBO Hub Logistics Fleet',
-      description: 'Earn 85%–90% of delivery fees with instant QR handover payouts across Nigeria.',
+      title: 'Become a Delivery Agent — Deliver Packages & Earn on IBO Hub',
+      description: 'Earn 85%–90% of delivery fees with instant payouts after each confirmed delivery.',
     };
   }
   if (clean.startsWith('/merchant')) {
     return {
-      title: 'Merchant Dashboard — IBO Hub',
-      description: 'Manage your wholesale product catalog, fulfillment orders, and bank payouts.',
+      title: 'Seller Dashboard — IBO Hub',
+      description: 'Manage your products, customer orders, and bank payouts.',
     };
   }
   if (clean.startsWith('/ibo/dashboard') || clean.startsWith('/dashboard')) {
     return {
       title: 'IBO Dashboard — IBO Hub',
-      description: 'Manage your referrals, storefront markups, earnings, and attributed customers.',
+      description: 'Manage your online shop, product prices, earnings, and customers.',
     };
   }
   if (clean.startsWith('/agent')) {
     return {
       title: 'Delivery Agent Dashboard — IBO Hub',
-      description: 'View available dispatch jobs, active deliveries, and QR handover verification.',
+      description: 'View available pickup jobs, live delivery map routes, and earnings.',
     };
   }
   return {
-    title: 'IBO Hub — Online Marketplace & Logistics Network',
-    description: 'Shop verified Nigerian merchants with escrow protection and fast nationwide delivery.',
+    title: 'IBO Hub – Nigeria Online Marketplace for Phones, Groceries & Solar',
+    description:
+      'Shop phones, solar gear, 50kg bulk groceries, and fashion from trusted Nigerian sellers on IBO Hub. Free delivery over ₦20,000 and safe payment on delivery.',
   };
 }
 
@@ -239,10 +249,17 @@ function MainApp() {
   useEffect(() => {
     const meta = getPageMetadata(currentPath);
     document.title = meta.title;
-    const descEl = document.querySelector('meta[name="description"]');
-    if (descEl) {
-      descEl.setAttribute('content', meta.description);
-    }
+    const setMetaContent = (selector: string, content: string) => {
+      const el = document.querySelector(selector);
+      if (el) {
+        el.setAttribute('content', content);
+      }
+    };
+    setMetaContent('meta[name="description"]', meta.description);
+    setMetaContent('meta[property="og:title"]', meta.title);
+    setMetaContent('meta[property="og:description"]', meta.description);
+    setMetaContent('meta[name="twitter:title"]', meta.title);
+    setMetaContent('meta[name="twitter:description"]', meta.description);
   }, [currentPath]);
 
   const handleNavigate = (path: string) => {
@@ -398,9 +415,13 @@ function MainApp() {
       return <ProductDetailScreen productId={productId} onNavigate={handleNavigate} />;
     }
 
-    // 3. Cart & Checkout routes
+    // 3. Cart, Wishlist & Checkout routes
     if (cleanPath === '/cart') {
       return <CartScreen onNavigate={handleNavigate} />;
+    }
+
+    if (cleanPath === '/wishlist' || cleanPath === '/my-wishlist') {
+      return <WishlistScreen onNavigate={handleNavigate} />;
     }
 
     if (cleanPath === '/checkout') {

@@ -12,6 +12,9 @@ import {
   insertDbOrder,
   getDbLedgerEntries,
   insertDbLedgerEntry,
+  getDbWishlistByUser,
+  addDbWishlistItem,
+  removeDbWishlistItem,
 } from './src/db/queries.ts';
 
 const app = express();
@@ -215,6 +218,55 @@ app.post('/api/users/sync', async (req, res) => {
     });
   }
 });
+
+// Customer private wishlist endpoints
+app.get('/api/wishlist', async (req, res) => {
+  const userId = String(req.query.userId || '').trim();
+  if (!userId) {
+    return res.status(400).json({ error: 'userId query parameter is required' });
+  }
+  try {
+    const items = await getDbWishlistByUser(userId);
+    res.json({ success: true, items });
+  } catch {
+    res.json({ success: true, items: [] });
+  }
+});
+
+app.post('/api/wishlist', async (req, res) => {
+  const { userId, productId } = req.body || {};
+  if (!userId || !productId) {
+    return res.status(400).json({ error: 'userId and productId are required' });
+  }
+  try {
+    const item = await addDbWishlistItem(String(userId), String(productId));
+    res.json({ success: true, item });
+  } catch {
+    res.json({
+      success: true,
+      item: {
+        id: `wish-${userId}-${productId}`,
+        userId: String(userId),
+        productId: String(productId),
+        createdAt: new Date().toISOString(),
+      },
+    });
+  }
+});
+
+app.delete('/api/wishlist', async (req, res) => {
+  const { userId, productId } = req.body || {};
+  if (!userId || !productId) {
+    return res.status(400).json({ error: 'userId and productId are required' });
+  }
+  try {
+    await removeDbWishlistItem(String(userId), String(productId));
+    res.json({ success: true });
+  } catch {
+    res.json({ success: true });
+  }
+});
+
 
 // ==========================================
 // 2. IBO AUTHENTICATED API ROUTES (§4)

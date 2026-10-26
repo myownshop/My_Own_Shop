@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { UserRole } from '../../types';
+import { PlatformLogo } from '../../components/PlatformLogo';
 
 interface LoginScreenProps {
   onNavigate: (path: string) => void;
@@ -162,6 +163,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   return (
     <div className="py-10 px-4 bg-page">
       <div className="max-w-[420px] w-full mx-auto bg-surface border border-line rounded p-6 space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-line">
+          <PlatformLogo
+            onNavigate={onNavigate}
+            size="md"
+            subtitle="Safe Shopping & Partner Network"
+          />
+        </div>
+
         {/* Mode Switcher Tabs */}
         <div className="grid grid-cols-2 border border-line rounded overflow-hidden">
           <button

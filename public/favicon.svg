@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background Rounded Badge -->
+  <rect width="64" height="64" rx="14" fill="#00D27A" />
+  <!-- Shopping Cart Handle & Basket Outline -->
+  <path
+    d="M11 16H17.5L22.5 39H46.5L51.5 22H20"
+    stroke="#0B1F17"
+    stroke-width="4.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Shopping Cart Basket Fill -->
+  <path
+    d="M20 22H51.5L46.5 39H22.5L20 22Z"
+    fill="#0B1F17"
+  />
+  <!-- Gold Accent Spark Inside Cart -->
+  <circle cx="35.5" cy="30.5" r="3.5" fill="#FFB400" />
+  <!-- Cart Wheels -->
+  <circle cx="25" cy="48.5" r="4.5" fill="#0B1F17" />
+  <circle cx="44" cy="48.5" r="4.5" fill="#0B1F17" />
+</svg>

@@ -22,6 +22,7 @@ import { AgentQrGenerator } from '../../components/AgentQrGenerator';
 import { DeliveryAgentQrScanner } from '../../components/DeliveryAgentQrScanner';
 import { LiveDeliveryTrackingMap } from '../../components/LiveDeliveryTrackingMap';
 import { useAuth } from '../../context/AuthContext';
+import { PlatformLogo } from '../../components/PlatformLogo';
 
 interface DeliveryAgentAppScreenProps {
   onNavigate: (path: string) => void;
@@ -167,16 +168,19 @@ export const DeliveryAgentAppScreen: React.FC<DeliveryAgentAppScreenProps> = ({
       {/* Dark Left Sidebar (#14181F) */}
       <aside className="w-full md:w-60 bg-dark text-white shrink-0 flex flex-col justify-between border-b md:border-b-0 md:border-r border-line">
         <div>
-          <div className="p-4 border-b border-white/10 flex items-center justify-between">
+          <div className="p-4 border-b border-white/10 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <PlatformLogo onNavigate={onNavigate} variant="dark" size="sm" />
+              <span className="px-2 py-0.5 rounded bg-primary text-on-primary text-[11px] font-bold uppercase">
+                ONLINE
+              </span>
+            </div>
             <div>
-              <div className="text-[15px] font-bold text-white">Delivery Agent</div>
-              <div className="text-[11px] text-white/60 truncate max-w-[150px]">
+              <div className="text-[13px] font-bold text-white">Delivery Agent</div>
+              <div className="text-[11px] text-white/60 truncate max-w-[180px]">
                 {agent.name} • {agent.vehiclePlate}
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded bg-primary text-on-primary text-[11px] font-bold uppercase">
-              ONLINE
-            </span>
           </div>
 
           <nav className="py-2 flex md:flex-col overflow-x-auto">

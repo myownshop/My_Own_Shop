@@ -334,7 +334,32 @@ export const PROMO_BANNERS = [
     subtext: 'Up to 28% off warehouse stock. Free delivery on orders over ₦20,000 in Lagos, Abuja & Kano.',
     ctaText: 'Shop Solar Deals',
     ctaLink: '/category/electronics',
-    badgeText: 'Pay on Delivery Escrow',
+    badgeText: 'Pay on Delivery Protection',
+    imageUrl:
+      'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1000&q=80',
+    featuredItems: [
+      {
+        id: 'prod-4',
+        label: '550W Solar Panel',
+        price: '₦92,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        id: 'prod-15',
+        label: '2.5kVA Inverter',
+        price: '₦265,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        id: 'prod-19',
+        label: '5kWh Lithium Battery',
+        price: '₦980,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?auto=format&fit=crop&w=400&q=80',
+      },
+    ],
   },
   {
     id: 'banner-2',
@@ -344,15 +369,65 @@ export const PROMO_BANNERS = [
     ctaText: 'Browse Groceries',
     ctaLink: '/category/groceries',
     badgeText: 'Same-Day Hub Dispatch',
+    imageUrl:
+      'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=1000&q=80',
+    featuredItems: [
+      {
+        id: 'prod-1',
+        label: '50kg Kebbi Rice',
+        price: '₦68,500',
+        imageUrl:
+          'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        id: 'prod-16',
+        label: '50kg Honey Beans',
+        price: '₦74,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        id: 'prod-2',
+        label: '25L Pure Cooking Oil',
+        price: '₦42,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=400&q=80',
+      },
+    ],
   },
   {
     id: 'banner-3',
     tag: 'OFFICIAL WARRANTY PHONES',
     headline: 'Samsung, Xiaomi, Infinix & Oraimo Power Accessories',
-    subtext: '12-month manufacturer warranty. Funds remain in escrow until you scan the delivery QR code.',
+    subtext: '12-month manufacturer warranty. Your payment is kept safe until your order is delivered.',
     ctaText: 'Shop Phones',
     ctaLink: '/category/phones',
     badgeText: '100% Genuine Stock',
+    imageUrl:
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=80',
+    featuredItems: [
+      {
+        id: 'prod-6',
+        label: 'Galaxy A55 5G',
+        price: '₦465,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        id: 'prod-17',
+        label: 'Redmi Note 13 Pro',
+        price: '₦348,000',
+        imageUrl:
+          'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        id: 'prod-7',
+        label: 'Oraimo 30,000mAh',
+        price: '₦26,500',
+        imageUrl:
+          'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=400&q=80',
+      },
+    ],
   },
 ];
 
@@ -1586,3 +1661,174 @@ class CartManager {
 }
 
 export const cartStore = new CartManager();
+
+export interface WishlistItem {
+  productId: string;
+  addedAt: string;
+}
+
+const WISHLIST_STORAGE_KEY = 'ibohub_customer_wishlists_v1';
+
+class WishlistManager {
+  private byUser: Record<string, WishlistItem[]> = {};
+  private hydratedUsers: Set<string> = new Set();
+  private listeners: Set<() => void> = new Set();
+
+  constructor() {
+    this.load();
+  }
+
+  private load() {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
+      if (raw) {
+        this.byUser = JSON.parse(raw);
+      } else {
+        this.byUser = {
+          'usr-cust-1': [
+            { productId: 'prod-6', addedAt: new Date(Date.now() - 86400000 * 2).toISOString() },
+            { productId: 'prod-4', addedAt: new Date(Date.now() - 86400000).toISOString() },
+          ],
+        };
+      }
+    } catch {
+      this.byUser = {};
+    }
+  }
+
+  private save() {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(this.byUser));
+      } catch {
+        // ignore storage quota errors
+      }
+    }
+    this.listeners.forEach((fn) => fn());
+  }
+
+  public subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  public hydrateFromServer(userId: string | undefined | null) {
+    if (!userId || typeof window === 'undefined' || this.hydratedUsers.has(userId)) {
+      return;
+    }
+    this.hydratedUsers.add(userId);
+    fetch(`/api/wishlist?userId=${encodeURIComponent(userId)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          const current = this.byUser[userId] || [];
+          const existingIds = new Set(current.map((i) => i.productId));
+          let changed = false;
+          for (const row of data.items) {
+            if (row.productId && !existingIds.has(row.productId)) {
+              current.push({
+                productId: String(row.productId),
+                addedAt: row.createdAt ? new Date(row.createdAt).toISOString() : new Date().toISOString(),
+              });
+              existingIds.add(String(row.productId));
+              changed = true;
+            }
+          }
+          if (changed) {
+            this.byUser[userId] = current;
+            this.save();
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  public getItems(userId: string | undefined | null): WishlistItem[] {
+    if (!userId) return [];
+    return this.byUser[userId] || [];
+  }
+
+  public getCount(userId: string | undefined | null): number {
+    return this.getItems(userId).length;
+  }
+
+  public isWishlisted(userId: string | undefined | null, productId: string): boolean {
+    if (!userId) return false;
+    return this.getItems(userId).some((item) => item.productId === productId);
+  }
+
+  public getDetailedItems(
+    userId: string | undefined | null
+  ): { item: WishlistItem; product: MarketplaceProduct }[] {
+    if (!userId) return [];
+    const all = getAllMarketplaceProducts();
+    return this.getItems(userId)
+      .map((item) => {
+        const product = all.find((p) => p.id === item.productId);
+        return product ? { item, product } : null;
+      })
+      .filter((x): x is { item: WishlistItem; product: MarketplaceProduct } => x !== null);
+  }
+
+  public addItem(userId: string, productId: string) {
+    if (!userId || !productId) return;
+    const list = this.byUser[userId] ? [...this.byUser[userId]] : [];
+    if (!list.some((i) => i.productId === productId)) {
+      list.unshift({ productId, addedAt: new Date().toISOString() });
+      this.byUser[userId] = list;
+      this.save();
+
+      fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, productId }),
+      }).catch(() => {});
+    }
+  }
+
+  public removeItem(userId: string, productId: string) {
+    if (!userId || !productId) return;
+    const list = this.byUser[userId] || [];
+    const next = list.filter((i) => i.productId !== productId);
+    if (next.length !== list.length) {
+      this.byUser[userId] = next;
+      this.save();
+
+      fetch('/api/wishlist', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, productId }),
+      }).catch(() => {});
+    }
+  }
+
+  public toggleItem(userId: string, productId: string): boolean {
+    if (this.isWishlisted(userId, productId)) {
+      this.removeItem(userId, productId);
+      return false;
+    } else {
+      this.addItem(userId, productId);
+      return true;
+    }
+  }
+
+  public clearWishlist(userId: string) {
+    if (!userId) return;
+    const list = this.byUser[userId] || [];
+    for (const item of list) {
+      fetch('/api/wishlist', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, productId: item.productId }),
+      }).catch(() => {});
+    }
+    this.byUser[userId] = [];
+    this.save();
+  }
+}
+
+export const wishlistStore = new WishlistManager();
+

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Star, ShoppingCart, Check } from 'lucide-react';
-import { MarketplaceProduct, cartStore } from '../data/marketplaceData';
+import React, { useState, useEffect } from 'react';
+import { Star, ShoppingCart, Check, Heart } from 'lucide-react';
+import { MarketplaceProduct, cartStore, wishlistStore } from '../data/marketplaceData';
+import { useAuth } from '../context/AuthContext';
 
 interface ProductCardProps {
   product: MarketplaceProduct;
@@ -13,13 +14,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onNavigate,
   layout = 'grid',
 }) => {
+  const { currentAppUser, userProfile } = useAuth();
+  const activeUserId = currentAppUser?.id || userProfile?.userId || null;
+
   const [added, setAdded] = useState(false);
+  const [wishlisted, setWishlisted] = useState<boolean>(() =>
+    wishlistStore.isWishlisted(activeUserId, product.id)
+  );
+
+  useEffect(() => {
+    setWishlisted(wishlistStore.isWishlisted(activeUserId, product.id));
+    const unsubscribe = wishlistStore.subscribe(() => {
+      setWishlisted(wishlistStore.isWishlisted(activeUserId, product.id));
+    });
+    return () => unsubscribe();
+  }, [activeUserId, product.id]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     cartStore.addItem(product.id, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1200);
+  };
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!activeUserId) {
+      onNavigate('/wishlist');
+      return;
+    }
+    const next = wishlistStore.toggleItem(activeUserId, product.id);
+    setWishlisted(next);
   };
 
   if (layout === 'list') {
@@ -34,6 +59,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               -{product.discountPercent}%
             </span>
           )}
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            aria-label={wishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+            title={wishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+            className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-surface/95 border border-line hover:border-primary-dark flex items-center justify-center shadow-sm cursor-pointer"
+          >
+            <Heart
+              className={`w-4 h-4 ${wishlisted ? 'fill-sale text-sale' : 'text-ink'}`}
+              strokeWidth={1.75}
+            />
+          </button>
           <img
             src={product.imageUrl}
             alt={product.title}
@@ -108,6 +145,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               -{product.discountPercent}%
             </span>
           )}
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            aria-label={wishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+            title={wishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+            className="absolute top-1.5 right-1.5 z-10 w-7 h-7 rounded-full bg-surface/95 border border-line hover:border-primary-dark flex items-center justify-center shadow-sm cursor-pointer"
+          >
+            <Heart
+              className={`w-3.5 h-3.5 ${wishlisted ? 'fill-sale text-sale' : 'text-ink'}`}
+              strokeWidth={1.75}
+            />
+          </button>
           <img
             src={product.imageUrl}
             alt={product.title}
@@ -161,3 +210,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </div>
   );
 };
+

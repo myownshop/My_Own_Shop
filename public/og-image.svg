@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1F17" />
+      <stop offset="55%" stop-color="#14181F" />
+      <stop offset="100%" stop-color="#0E291E" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D27A" />
+      <stop offset="100%" stop-color="#00A862" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+
+  <!-- Top Accent Strip -->
+  <rect x="0" y="0" width="1200" height="10" fill="url(#accentGrad)" />
+
+  <!-- Subtle Grid Pattern -->
+  <g stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="1">
+    <line x1="0" y1="120" x2="1200" y2="120" />
+    <line x1="0" y1="260" x2="1200" y2="260" />
+    <line x1="0" y1="400" x2="1200" y2="400" />
+    <line x1="0" y1="540" x2="1200" y2="540" />
+    <line x1="740" y1="0" x2="740" y2="630" />
+  </g>
+
+  <!-- Left Content Area -->
+  <g transform="translate(72, 76)">
+    <!-- Brand Mark + Badge -->
+    <g transform="scale(0.8125)">
+      <rect width="64" height="64" rx="14" fill="#00D27A" />
+      <path
+        d="M11 16H17.5L22.5 39H46.5L51.5 22H20"
+        stroke="#0B1F17"
+        stroke-width="4.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+      />
+      <path d="M20 22H51.5L46.5 39H22.5L20 22Z" fill="#0B1F17" />
+      <circle cx="35.5" cy="30.5" r="3.5" fill="#FFB400" />
+      <circle cx="25" cy="48.5" r="4.5" fill="#0B1F17" />
+      <circle cx="44" cy="48.5" r="4.5" fill="#0B1F17" />
+    </g>
+    <text x="68" y="36" font-family="DM Sans, Arial, sans-serif" font-size="32" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">
+      IBO Hub
+    </text>
+    <rect x="220" y="12" width="248" height="30" rx="4" fill="#00D27A" fill-opacity="0.16" stroke="#00D27A" stroke-width="1.5" />
+    <text x="236" y="32" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#00D27A" letter-spacing="0.8">
+      NIGERIA ONLINE MARKETPLACE
+    </text>
+
+    <!-- Main Headline -->
+    <text x="0" y="138" font-family="DM Sans, Arial, sans-serif" font-size="50" font-weight="800" fill="#FFFFFF" letter-spacing="-1">
+      Shop Phones, Groceries,
+    </text>
+    <text x="0" y="198" font-family="DM Sans, Arial, sans-serif" font-size="50" font-weight="800" fill="#FFFFFF" letter-spacing="-1">
+      Solar &amp; Home Essentials
+    </text>
+
+    <!-- Subheadline / Description -->
+    <text x="0" y="256" font-family="DM Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#D1D5DB">
+      Buy from trusted Nigerian sellers with safe payment protection.
+    </text>
+    <text x="0" y="288" font-family="DM Sans, Arial, sans-serif" font-size="22" font-weight="400" fill="#D1D5DB">
+      Your money is kept safe until your package arrives at your door.
+    </text>
+
+    <!-- Feature Highlights Row -->
+    <g transform="translate(0, 336)">
+      <rect x="0" y="0" width="205" height="54" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <circle cx="26" cy="27" r="10" fill="#00D27A" />
+      <path d="M22 27l3 3 6-6" stroke="#0B1F17" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="46" y="24" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Safe Payment</text>
+      <text x="46" y="41" font-family="DM Sans, Arial, sans-serif" font-size="12" font-weight="400" fill="#9CA3AF">Pay when delivered</text>
+
+      <rect x="220" y="0" width="205" height="54" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <circle cx="246" cy="27" r="10" fill="#FFB400" />
+      <path d="M242 27l3 3 6-6" stroke="#0B1F17" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="266" y="24" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Fast Delivery</text>
+      <text x="266" y="41" font-family="DM Sans, Arial, sans-serif" font-size="12" font-weight="400" fill="#9CA3AF">Live map tracking</text>
+
+      <rect x="440" y="0" width="205" height="54" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+      <circle cx="466" cy="27" r="10" fill="#00D27A" />
+      <path d="M462 27l3 3 6-6" stroke="#0B1F17" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="486" y="24" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Trusted Sellers</text>
+      <text x="486" y="41" font-family="DM Sans, Arial, sans-serif" font-size="12" font-weight="400" fill="#9CA3AF">Verified across Nigeria</text>
+    </g>
+
+    <!-- Bottom CTA Pill -->
+    <g transform="translate(0, 422)">
+      <rect x="0" y="0" width="330" height="52" rx="6" fill="#00D27A" />
+      <text x="24" y="32" font-family="DM Sans, Arial, sans-serif" font-size="18" font-weight="800" fill="#0B1F17">
+        Free Delivery Over ₦20,000 →
+      </text>
+    </g>
+  </g>
+
+  <!-- Right Product Showcase Cards -->
+  <g transform="translate(770, 68)">
+    <!-- Card 1: Phones & Tech -->
+    <rect x="0" y="0" width="358" height="145" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+    <rect x="16" y="16" width="113" height="113" rx="6" fill="#0F172A" stroke="#00D27A" stroke-width="1.5" />
+    <!-- Phone Illustration -->
+    <rect x="52" y="32" width="42" height="80" rx="6" fill="#1E293B" stroke="#00D27A" stroke-width="2.5" />
+    <circle cx="73" cy="102" r="3" fill="#00D27A" />
+    <rect x="64" y="39" width="18" height="3" rx="1.5" fill="#9CA3AF" />
+    <text x="146" y="44" font-family="DM Sans, Arial, sans-serif" font-size="12" font-weight="700" fill="#00D27A" letter-spacing="0.6">OFFICIAL WARRANTY</text>
+    <text x="146" y="72" font-family="DM Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Phones &amp; Power</text>
+    <text x="146" y="96" font-family="DM Sans, Arial, sans-serif" font-size="14" font-weight="400" fill="#9CA3AF">Samsung, Xiaomi &amp; Oraimo</text>
+    <text x="146" y="122" font-family="DM Sans, Arial, sans-serif" font-size="18" font-weight="800" fill="#FFB400">From ₦26,500</text>
+
+    <!-- Card 2: Farm Groceries -->
+    <rect x="0" y="168" width="358" height="145" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+    <rect x="16" y="184" width="113" height="113" rx="6" fill="#0F172A" stroke="#FFB400" stroke-width="1.5" />
+    <!-- Grain Sack Illustration -->
+    <rect x="46" y="206" width="54" height="68" rx="8" fill="#1E293B" stroke="#FFB400" stroke-width="2.5" />
+    <line x1="54" y1="224" x2="92" y2="224" stroke="#FFB400" stroke-width="2" />
+    <text x="61" y="250" font-family="DM Sans, Arial, sans-serif" font-size="13" font-weight="800" fill="#FFB400">50KG</text>
+    <text x="146" y="212" font-family="DM Sans, Arial, sans-serif" font-size="12" font-weight="700" fill="#FFB400" letter-spacing="0.6">DIRECT FROM MILL</text>
+    <text x="146" y="240" font-family="DM Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Bulk Food &amp; Rice</text>
+    <text x="146" y="264" font-family="DM Sans, Arial, sans-serif" font-size="14" font-weight="400" fill="#9CA3AF">50kg Rice, Beans &amp; Oils</text>
+    <text x="146" y="290" font-family="DM Sans, Arial, sans-serif" font-size="18" font-weight="800" fill="#00D27A">From ₦42,000</text>
+
+    <!-- Card 3: Solar & Electronics -->
+    <rect x="0" y="336" width="358" height="145" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1.5" />
+    <rect x="16" y="352" width="113" height="113" rx="6" fill="#0F172A" stroke="#00D27A" stroke-width="1.5" />
+    <!-- Solar Panel Grid Illustration -->
+    <rect x="42" y="376" width="62" height="64" rx="4" fill="#1E293B" stroke="#00D27A" stroke-width="2.5" />
+    <line x1="62" y1="376" x2="62" y2="440" stroke="#00D27A" stroke-width="1.5" />
+    <line x1="83" y1="376" x2="83" y2="440" stroke="#00D27A" stroke-width="1.5" />
+    <line x1="42" y1="397" x2="104" y2="397" stroke="#00D27A" stroke-width="1.5" />
+    <line x1="42" y1="419" x2="104" y2="419" stroke="#00D27A" stroke-width="1.5" />
+    <text x="146" y="380" font-family="DM Sans, Arial, sans-serif" font-size="12" font-weight="700" fill="#00D27A" letter-spacing="0.6">HOME POWER</text>
+    <text x="146" y="408" font-family="DM Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">Solar &amp; Inverters</text>
+    <text x="146" y="432" font-family="DM Sans, Arial, sans-serif" font-size="14" font-weight="400" fill="#9CA3AF">550W Panels &amp; Batteries</text>
+    <text x="146" y="458" font-family="DM Sans, Arial, sans-serif" font-size="18" font-weight="800" fill="#FFB400">From ₦92,000</text>
+  </g>
+</svg>

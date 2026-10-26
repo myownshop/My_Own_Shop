@@ -13,12 +13,16 @@ import {
   Minus,
   Plus,
   X,
+  Heart,
 } from 'lucide-react';
 import {
   getAllMarketplaceProducts,
   cartStore,
+  wishlistStore,
 } from '../../data/marketplaceData';
 import { ProductCard } from '../../components/ProductCard';
+import { useAuth } from '../../context/AuthContext';
+import { ShopperAuthGateCard } from '../../components/ShopperAuthGateCard';
 
 interface ProductDetailScreenProps {
   productId: string;
@@ -29,6 +33,9 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   productId,
   onNavigate,
 }) => {
+  const { currentAppUser, userProfile } = useAuth();
+  const activeUserId = currentAppUser?.id || userProfile?.userId || null;
+
   const allProducts = getAllMarketplaceProducts();
   const product =
     allProducts.find((p) => p.id === productId) || allProducts[0];
@@ -40,6 +47,11 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     'description'
   );
   const [addedFeedback, setAddedFeedback] = useState<boolean>(false);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(() =>
+    wishlistStore.isWishlisted(activeUserId, product.id)
+  );
+  const [wishlistNotice, setWishlistNotice] = useState<'saved' | 'removed' | null>(null);
+  const [wishlistAuthModalOpen, setWishlistAuthModalOpen] = useState<boolean>(false);
   const [chatOpen, setChatOpen] = useState<boolean>(false);
   const [chatMessage, setChatMessage] = useState<string>('');
   const [chatSent, setChatSent] = useState<boolean>(false);
@@ -55,7 +67,30 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     });
     setSelectedVariants(defaults);
     cartStore.recordViewedProduct(product.id);
+    setWishlistNotice(null);
   }, [product.id]);
+
+  useEffect(() => {
+    if (activeUserId) {
+      wishlistStore.hydrateFromServer(activeUserId);
+    }
+    setIsWishlisted(wishlistStore.isWishlisted(activeUserId, product.id));
+
+    const unsubscribe = wishlistStore.subscribe(() => {
+      setIsWishlisted(wishlistStore.isWishlisted(activeUserId, product.id));
+    });
+    return () => unsubscribe();
+  }, [activeUserId, product.id]);
+
+  const handleToggleWishlist = () => {
+    if (!activeUserId) {
+      setWishlistAuthModalOpen(true);
+      return;
+    }
+    const nowSaved = wishlistStore.toggleItem(activeUserId, product.id);
+    setIsWishlisted(nowSaved);
+    setWishlistNotice(nowSaved ? 'saved' : 'removed');
+  };
 
   const handleAddToCart = () => {
     cartStore.addItem(product.id, quantity, selectedVariants);
@@ -131,12 +166,28 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
         <div className="lg:col-span-9 bg-surface border border-line rounded p-4 grid grid-cols-1 md:grid-cols-12 gap-5">
           {/* Image Gallery with Thumbnails (5 cols) */}
           <div className="md:col-span-5 space-y-2.5">
-            <div className="aspect-square w-full bg-page border border-line rounded overflow-hidden">
+            <div className="relative aspect-square w-full bg-page border border-line rounded overflow-hidden">
               <img
                 src={product.images[selectedImageIdx] || product.imageUrl}
                 alt={product.title}
                 className="w-full h-full object-cover"
               />
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                aria-label={isWishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+                title={isWishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+                className={`absolute top-3 right-3 z-10 w-10 h-10 rounded-full border flex items-center justify-center shadow-sm transition-colors cursor-pointer ${
+                  isWishlisted
+                    ? 'bg-surface border-sale text-sale'
+                    : 'bg-surface/95 border-line text-ink hover:border-primary-dark hover:text-primary-dark'
+                }`}
+              >
+                <Heart
+                  className={`w-5 h-5 ${isWishlisted ? 'fill-sale text-sale' : ''}`}
+                  strokeWidth={1.75}
+                />
+              </button>
             </div>
 
             <div className="flex items-center gap-2 overflow-x-auto">
@@ -166,19 +217,37 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           {/* Product Details, Variants, Stepper & Actions (7 cols) */}
           <div className="md:col-span-7 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted">
-                <span>Brand:</span>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-muted">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>Brand:</span>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(`/search?q=${encodeURIComponent(product.brand)}`)}
+                    className="font-bold text-primary-dark hover:underline cursor-pointer"
+                  >
+                    {product.brand}
+                  </button>
+                  <span>·</span>
+                  <span>Item ID: {product.id.toUpperCase()}</span>
+                  <span>·</span>
+                  <span>{product.sellerType}</span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/search?q=${encodeURIComponent(product.brand)}`)}
-                  className="font-bold text-primary-dark hover:underline cursor-pointer"
+                  onClick={handleToggleWishlist}
+                  aria-label={isWishlisted ? 'Saved in My Wishlist' : 'Save to My Wishlist'}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[12px] font-bold transition-colors cursor-pointer ${
+                    isWishlisted
+                      ? 'bg-sale-tint border-sale text-sale'
+                      : 'bg-page border-line text-ink hover:border-primary-dark'
+                  }`}
                 >
-                  {product.brand}
+                  <Heart
+                    className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-sale text-sale' : ''}`}
+                    strokeWidth={1.75}
+                  />
+                  <span>{isWishlisted ? 'Saved' : 'Save'}</span>
                 </button>
-                <span>·</span>
-                <span>Item ID: {product.id.toUpperCase()}</span>
-                <span>·</span>
-                <span>{product.sellerType}</span>
               </div>
 
               <h1 className="page-title">{product.title}</h1>
@@ -276,34 +345,70 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               </div>
             </div>
 
-            {/* Spring Green "Add to cart" and Amber "Buy now" (both with near-black bold text) */}
-            <div className="pt-4 border-t border-line grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                className="h-10 px-6 bg-primary hover:bg-primary-dark text-on-primary font-bold text-[14px] rounded flex items-center justify-center gap-2 transition-colors cursor-pointer"
-              >
-                {addedFeedback ? (
-                  <>
-                    <Check className="w-5 h-5" strokeWidth={1.75} />
-                    <span>Added to cart</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-5 h-5" strokeWidth={1.75} />
-                    <span>Add to cart</span>
-                  </>
-                )}
-              </button>
+            {/* Spring Green "Add to cart", Amber "Buy now", and Heart "Wishlist" button */}
+            <div className="pt-4 border-t border-line space-y-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="sm:col-span-5 h-10 px-4 bg-primary hover:bg-primary-dark text-on-primary font-bold text-[14px] rounded flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  {addedFeedback ? (
+                    <>
+                      <Check className="w-5 h-5" strokeWidth={1.75} />
+                      <span>Added to cart</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-5 h-5" strokeWidth={1.75} />
+                      <span>Add to cart</span>
+                    </>
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={handleBuyNow}
-                className="h-10 px-6 bg-accent text-on-primary font-bold text-[14px] rounded flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Zap className="w-5 h-5" strokeWidth={1.75} />
-                <span>Buy now</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="sm:col-span-4 h-10 px-4 bg-accent text-on-primary font-bold text-[14px] rounded flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Zap className="w-5 h-5" strokeWidth={1.75} />
+                  <span>Buy now</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleToggleWishlist}
+                  aria-label={isWishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+                  className={`sm:col-span-3 h-10 px-3 rounded border font-bold text-[13px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                    isWishlisted
+                      ? 'bg-sale-tint border-sale text-sale'
+                      : 'bg-surface border-line hover:border-primary-dark text-ink'
+                  }`}
+                >
+                  <Heart
+                    className={`w-4 h-4 shrink-0 ${isWishlisted ? 'fill-sale text-sale' : ''}`}
+                    strokeWidth={1.75}
+                  />
+                  <span>{isWishlisted ? 'Wishlisted' : 'Wishlist'}</span>
+                </button>
+              </div>
+
+              {wishlistNotice && (
+                <div className="px-3 py-2 rounded bg-primary-tint border border-primary-dark flex items-center justify-between gap-2 text-[12px] text-on-primary">
+                  <span className="font-medium">
+                    {wishlistNotice === 'saved'
+                      ? 'Saved to your private wishlist.'
+                      : 'Removed from your wishlist.'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('/wishlist')}
+                    className="font-bold underline hover:opacity-80 cursor-pointer shrink-0"
+                  >
+                    View My Wishlist
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -571,29 +676,77 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       </section>
 
       {/* Sticky Bottom "Add to cart" Bar on Mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-line p-3 flex items-center justify-between gap-3">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-line p-3 flex items-center justify-between gap-2">
         <div>
-          <div className="text-[12px] text-muted">Unit Price</div>
+          <div className="text-[11px] text-muted">Unit Price</div>
           <div className="price-text">₦{product.price.toLocaleString()}</div>
         </div>
         <div className="flex items-center gap-2 flex-1 max-w-xs">
           <button
             type="button"
-            onClick={handleAddToCart}
-            className="flex-1 h-11 bg-primary text-on-primary font-bold text-[14px] rounded flex items-center justify-center gap-1.5 cursor-pointer"
+            onClick={handleToggleWishlist}
+            aria-label={isWishlisted ? 'Remove from My Wishlist' : 'Save to My Wishlist'}
+            className={`w-11 h-11 rounded border flex items-center justify-center shrink-0 cursor-pointer ${
+              isWishlisted
+                ? 'bg-sale-tint border-sale text-sale'
+                : 'bg-surface border-line text-ink'
+            }`}
           >
-            <ShoppingCart className="w-5 h-5" strokeWidth={1.75} />
+            <Heart
+              className={`w-5 h-5 ${isWishlisted ? 'fill-sale text-sale' : ''}`}
+              strokeWidth={1.75}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="flex-1 h-11 bg-primary text-on-primary font-bold text-[13px] rounded flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <ShoppingCart className="w-4 h-4" strokeWidth={1.75} />
             <span>{addedFeedback ? 'Added' : 'Add to cart'}</span>
           </button>
           <button
             type="button"
             onClick={handleBuyNow}
-            className="h-11 px-4 bg-accent text-on-primary font-bold text-[14px] rounded cursor-pointer"
+            className="h-11 px-3.5 bg-accent text-on-primary font-bold text-[13px] rounded cursor-pointer"
           >
             Buy now
           </button>
         </div>
       </div>
+
+      {/* Wishlist Sign-In Gate Modal for Guests */}
+      {wishlistAuthModalOpen && (
+        <div className="fixed inset-0 z-50 bg-dark/60 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-surface border border-line rounded overflow-hidden shadow-lg">
+            <div className="px-4 py-3 bg-surface border-b border-line flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-sale fill-sale" strokeWidth={1.75} />
+                <span className="section-title">Save to My Wishlist</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWishlistAuthModalOpen(false)}
+                aria-label="Close sign in window"
+                className="w-8 h-8 rounded border border-line flex items-center justify-center text-ink hover:bg-page cursor-pointer"
+              >
+                <X className="w-4 h-4" strokeWidth={1.75} />
+              </button>
+            </div>
+            <div className="p-4 max-h-[80vh] overflow-y-auto">
+              <ShopperAuthGateCard
+                compact
+                onAuthenticated={(user) => {
+                  wishlistStore.addItem(user.id, product.id);
+                  setIsWishlisted(true);
+                  setWishlistNotice('saved');
+                  setWishlistAuthModalOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Chat with Seller Modal */}
       {chatOpen && (
@@ -673,3 +826,4 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     </div>
   );
 };
+
