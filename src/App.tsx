@@ -8,6 +8,7 @@ import { ProductDetailScreen } from './surfaces/customer/ProductDetailScreen';
 import { CartScreen } from './surfaces/customer/CartScreen';
 import { CheckoutScreen } from './surfaces/customer/CheckoutScreen';
 import { WishlistScreen } from './surfaces/customer/WishlistScreen';
+import { MyOrdersScreen } from './surfaces/customer/MyOrdersScreen';
 import { CustomerShopScreen } from './surfaces/customer/CustomerShopScreen';
 import { IboDashboardScreen } from './surfaces/ibo/IboDashboardScreen';
 import { MerchantPortalScreen } from './surfaces/merchant/MerchantPortalScreen';
@@ -81,6 +82,12 @@ function getPageMetadata(path: string): { title: string; description: string } {
     return {
       title: 'My Wishlist — IBO Hub',
       description: 'View and manage the products saved to your private customer wishlist.',
+    };
+  }
+  if (clean === '/my-orders' || clean === '/orders' || clean === '/track-order') {
+    return {
+      title: 'My Orders & Track My Order — IBO Hub',
+      description: 'View your orders, track live delivery status, and confirm doorstep delivery.',
     };
   }
   if (clean === '/checkout') {
@@ -422,6 +429,14 @@ function MainApp() {
 
     if (cleanPath === '/wishlist' || cleanPath === '/my-wishlist') {
       return <WishlistScreen onNavigate={handleNavigate} />;
+    }
+
+    if (
+      cleanPath === '/my-orders' ||
+      cleanPath === '/orders' ||
+      cleanPath === '/track-order'
+    ) {
+      return <MyOrdersScreen onNavigate={handleNavigate} />;
     }
 
     if (cleanPath === '/checkout') {

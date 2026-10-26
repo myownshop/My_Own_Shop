@@ -197,10 +197,10 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ onNavigate }) =>
             </button>
             <button
               type="button"
-              onClick={() => onNavigate('/track-order')}
+              onClick={() => onNavigate('/my-orders')}
               className="h-10 px-5 bg-surface border border-line text-ink font-bold text-[14px] rounded hover:bg-page cursor-pointer"
             >
-              Track delivery status
+              Go to My Orders &amp; Track Order
             </button>
           </div>
         </div>

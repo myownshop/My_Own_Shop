@@ -53,6 +53,12 @@ export interface MarketplaceProduct {
   isBestSeller?: boolean;
   isNewArrival?: boolean;
   description: string;
+  keyFeatures?: string[];
+  whatsInTheBox?: string;
+  warranty?: string;
+  condition?: string;
+  sku?: string;
+  weightKg?: string;
   specs: { label: string; value: string }[];
   variants: {
     label: string;
@@ -1494,39 +1500,71 @@ export function getAllMarketplaceProducts(): MarketplaceProduct[] {
   }
 
   for (const sp of storeProducts) {
-    if (!mergedMap.has(sp.id)) {
-      const basePrice = sp.merchantBasePrice || 25000;
-      const oldPrice = Math.round(basePrice * 1.2);
+    const basePrice = sp.merchantBasePrice || 25000;
+    const oldPrice = sp.recommendedRetailPrice && sp.recommendedRetailPrice > basePrice
+      ? sp.recommendedRetailPrice
+      : Math.round(basePrice * 1.2);
+    const discountPercent = oldPrice > basePrice
+      ? Math.round(((oldPrice - basePrice) / oldPrice) * 100)
+      : 15;
+    const matchedCat = MARKETPLACE_CATEGORIES.find(
+      (c) =>
+        c.slug === sp.category?.toLowerCase() ||
+        c.name.toLowerCase().includes((sp.category || '').toLowerCase())
+    ) || MARKETPLACE_CATEGORIES[3];
+
+    const gallery =
+      sp.galleryImages && sp.galleryImages.length > 0
+        ? sp.galleryImages
+        : [sp.imageUrl || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80'];
+
+    const existingMock = mergedMap.get(sp.id);
+    if (!existingMock || sp.keyFeatures || sp.specs) {
       mergedMap.set(sp.id, {
         id: sp.id,
         title: sp.title,
-        brand: sp.merchantName.split(' ')[0] || 'IBOHub',
-        categorySlug: 'groceries',
-        categoryName: sp.category || 'Groceries & Bulk Food',
-        subCategorySlug: 'rice-grains',
-        subCategoryName: '50kg Rice, Beans & Grains',
+        brand: sp.brand || existingMock?.brand || sp.merchantName.split(' ')[0] || 'IBOHub',
+        categorySlug: matchedCat.slug,
+        categoryName: matchedCat.name,
+        subCategorySlug: sp.subCategory?.toLowerCase().replace(/\s+/g, '-') || matchedCat.subCategories[0]?.slug || 'general',
+        subCategoryName: sp.subCategory || matchedCat.subCategories[0]?.name || 'General',
         price: basePrice,
         oldPrice,
-        discountPercent: 17,
-        rating: 4.8,
-        reviewCount: 42,
-        imageUrl: sp.imageUrl || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80',
-        images: [sp.imageUrl || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80'],
+        discountPercent,
+        rating: existingMock?.rating || 4.8,
+        reviewCount: existingMock?.reviewCount || 42,
+        imageUrl: sp.imageUrl || gallery[0],
+        images: gallery,
         merchantId: sp.merchantId,
         merchantName: sp.merchantName,
         merchantCode: sp.merchantCode,
         sellerType: sp.fulfillmentType === 'warehouse_deposit' ? 'Warehouse Deposit' : 'Verified Merchant',
-        location: 'Lagos',
+        location: sp.dispatchLocation || existingMock?.location || 'Lagos',
         deliveryOptions: ['Same-Day Lagos', 'Express Hub Pickup', 'Free Delivery Eligible'],
-        stockQty: sp.stockQty || 25,
+        stockQty: sp.stockQty ?? 25,
         isRecommended: true,
-        description: sp.description || 'Verified merchant inventory stored and fulfilled with QR escrow buyer protection.',
-        specs: [
-          { label: 'Merchant Code', value: sp.merchantCode },
-          { label: 'Fulfillment', value: sp.fulfillmentType === 'warehouse_deposit' ? 'IBO Hub Warehouse' : 'Merchant Direct' },
-        ],
-        variants: [{ label: 'Option', options: ['Standard Unit'] }],
-        reviews: DEFAULT_REVIEWS,
+        description: sp.description || 'Verified merchant inventory stored and fulfilled with safe payment buyer protection.',
+        keyFeatures: sp.keyFeatures || existingMock?.keyFeatures,
+        whatsInTheBox: sp.whatsInTheBox || existingMock?.whatsInTheBox,
+        warranty: sp.warranty || existingMock?.warranty,
+        condition: sp.condition || existingMock?.condition || 'Brand New',
+        sku: sp.sku || existingMock?.sku || sp.id.toUpperCase(),
+        weightKg: sp.weightKg || existingMock?.weightKg,
+        specs:
+          sp.specs && sp.specs.length > 0
+            ? sp.specs
+            : existingMock?.specs || [
+                { label: 'Brand', value: sp.brand || sp.merchantName },
+                { label: 'Condition', value: sp.condition || 'Brand New' },
+                { label: 'Warranty', value: sp.warranty || '7-Day Return Guarantee' },
+                { label: 'Merchant Code', value: sp.merchantCode },
+                { label: 'Fulfillment', value: sp.fulfillmentType === 'warehouse_deposit' ? 'IBO Hub Warehouse' : 'Merchant Direct' },
+              ],
+        variants:
+          sp.variants && sp.variants.length > 0
+            ? sp.variants
+            : existingMock?.variants || [{ label: 'Option', options: ['Standard Unit'] }],
+        reviews: existingMock?.reviews || DEFAULT_REVIEWS,
       });
     }
   }

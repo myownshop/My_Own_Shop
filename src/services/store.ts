@@ -1324,6 +1324,95 @@ class PlatformStore {
     return { success: true };
   }
 
+  public upsertIboProductPageListing(params: {
+    iboId: string;
+    productId: string;
+    iboMarkup: number;
+    customTitle: string;
+    customDescription: string;
+    customKeyFeatures: string[];
+    customWhatsInTheBox: string;
+    customWarranty: string;
+    customSpecs: { label: string; value: string }[];
+    galleryImages?: string[];
+  }): { success: boolean; error?: string; listing?: IboListing } {
+    const prod = this.state.products.find((p) => p.id === params.productId);
+    if (!prod) return { success: false, error: 'Selected supplier product not found' };
+
+    const maxAllowedMarkup =
+      prod.merchantBasePrice * (this.state.config.maxIboMarkupPercentage / 100);
+    if (params.iboMarkup > maxAllowedMarkup) {
+      return {
+        success: false,
+        error: `Markup exceeds 50% cap. Max allowed for this product is ₦${maxAllowedMarkup.toLocaleString()}`,
+      };
+    }
+    if (params.iboMarkup < 0) {
+      return { success: false, error: 'Markup cannot be negative' };
+    }
+
+    if (!this.state.iboListings[params.iboId]) {
+      this.state.iboListings[params.iboId] = [];
+    }
+
+    // Ensure supplier is in IBO's selectedMerchantIds if capacity allows
+    const iboProfile = this.state.iboProfiles[params.iboId];
+    if (iboProfile && !iboProfile.selectedMerchantIds.includes(prod.merchantId)) {
+      const tierConfig = this.state.config.tierCaps[iboProfile.tier];
+      if (iboProfile.selectedMerchantIds.length < tierConfig.maxSelectableMerchants) {
+        iboProfile.selectedMerchantIds.push(prod.merchantId);
+      }
+    }
+
+    const updatedProd: Product = {
+      ...prod,
+      title: params.customTitle.trim() || prod.title,
+      description: params.customDescription.trim() || prod.description,
+      keyFeatures: params.customKeyFeatures.filter(Boolean),
+      whatsInTheBox: params.customWhatsInTheBox.trim() || prod.whatsInTheBox,
+      warranty: params.customWarranty.trim() || prod.warranty,
+      specs: params.customSpecs.filter((s) => s.label.trim() && s.value.trim()),
+      galleryImages:
+        params.galleryImages && params.galleryImages.length > 0
+          ? params.galleryImages
+          : prod.galleryImages,
+    };
+
+    const existingIdx = this.state.iboListings[params.iboId].findIndex(
+      (l) => l.productId === params.productId
+    );
+
+    const newListing: IboListing = {
+      id:
+        existingIdx >= 0
+          ? this.state.iboListings[params.iboId][existingIdx].id
+          : `list-${params.iboId}-${params.productId}-${Date.now()}`,
+      iboId: params.iboId,
+      productId: params.productId,
+      product: updatedProd,
+      iboMarkup: params.iboMarkup,
+      finalCustomerPrice: prod.merchantBasePrice + params.iboMarkup,
+      isFeaturedInShop: true,
+      displayOrder: existingIdx >= 0 ? this.state.iboListings[params.iboId][existingIdx].displayOrder : 1,
+      isProductPageCompleted: true,
+      customTitle: params.customTitle.trim(),
+      customDescription: params.customDescription.trim(),
+      customKeyFeatures: params.customKeyFeatures.filter(Boolean),
+      customWhatsInTheBox: params.customWhatsInTheBox.trim(),
+      customWarranty: params.customWarranty.trim(),
+      customSpecs: params.customSpecs.filter((s) => s.label.trim() && s.value.trim()),
+    };
+
+    if (existingIdx >= 0) {
+      this.state.iboListings[params.iboId][existingIdx] = newListing;
+    } else {
+      this.state.iboListings[params.iboId].unshift(newListing);
+    }
+
+    this.saveState();
+    return { success: true, listing: newListing };
+  }
+
   public toggleSelectMerchantInIboHub(
     iboId: string,
     merchantId: string

@@ -12,6 +12,7 @@ import {
   Truck,
   CreditCard,
   Heart,
+  Package,
 } from 'lucide-react';
 import { MARKETPLACE_CATEGORIES, cartStore, wishlistStore } from '../data/marketplaceData';
 import { useAuth } from '../context/AuthContext';
@@ -98,9 +99,10 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
   const activeCategorySlug = currentPath.startsWith('/category/')
     ? currentPath.replace('/category/', '').split('?')[0]
     : '';
-  const isWishlistPage =
-    currentPath.split('?')[0] === '/wishlist' ||
-    currentPath.split('?')[0] === '/my-wishlist';
+  const cleanPath = currentPath.split('?')[0];
+  const isWishlistPage = cleanPath === '/wishlist' || cleanPath === '/my-wishlist';
+  const isMyOrdersPage =
+    cleanPath === '/my-orders' || cleanPath === '/orders' || cleanPath === '/track-order';
 
   return (
     <div className="min-h-screen flex flex-col bg-page text-ink">
@@ -156,10 +158,10 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
               <span aria-hidden="true">·</span>
               <button
                 type="button"
-                onClick={() => onNavigate('/track-order')}
+                onClick={() => onNavigate('/my-orders')}
                 className="hover:underline cursor-pointer"
               >
-                Track Order
+                My Orders
               </button>
               <span aria-hidden="true">·</span>
               <button
@@ -247,7 +249,7 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                         else if (role === 'ibo') onNavigate('/ibo/dashboard');
                         else if (role === 'agent') onNavigate('/agent/dashboard');
                         else if (role === 'founder') onNavigate('/admin');
-                        else onNavigate('/wishlist');
+                        else onNavigate('/my-orders');
                       }}
                       className="h-11 md:h-10 px-2.5 rounded flex items-center gap-1.5 text-[14px] font-medium text-ink hover:bg-primary-tint cursor-pointer"
                     >
@@ -274,6 +276,19 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                     <span className="hidden sm:inline">Account</span>
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('/my-orders')}
+                  className={`h-11 md:h-10 px-2.5 rounded flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${
+                    isMyOrdersPage
+                      ? 'bg-primary-tint text-on-primary border border-primary-dark font-bold'
+                      : 'text-ink hover:bg-primary-tint'
+                  }`}
+                >
+                  <Package className="w-5 h-5 text-ink" strokeWidth={1.75} />
+                  <span className="hidden md:inline">My Orders</span>
+                </button>
 
                 <button
                   type="button"
@@ -374,29 +389,45 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
           <div className="md:hidden bg-surface border-t border-line px-4 py-3 space-y-4">
             <div>
               <div className="text-[12px] font-bold text-muted uppercase mb-2">
-                My Account &amp; Saved Items
+                My Account, Orders &amp; Saved Items
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onNavigate('/wishlist');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full h-11 px-3 rounded border border-line text-left text-[14px] font-bold text-ink hover:bg-primary-tint flex items-center justify-between cursor-pointer"
-              >
-                <span className="flex items-center gap-2">
-                  <Heart
-                    className={`w-4 h-4 ${
-                      wishlistCount > 0 ? 'text-sale fill-sale' : 'text-primary-dark'
-                    }`}
-                    strokeWidth={1.75}
-                  />
-                  <span>My Wishlist</span>
-                </span>
-                <span className="text-[12px] text-muted">
-                  {activeUserId ? `${wishlistCount} saved` : 'Sign in'}
-                </span>
-              </button>
+              <div className="grid grid-cols-1 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('/my-orders');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full h-11 px-3 rounded border border-line text-left text-[14px] font-bold text-ink hover:bg-primary-tint flex items-center justify-between cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <Package className="w-4 h-4 text-primary-dark" strokeWidth={1.75} />
+                    <span>My Orders (Track My Order)</span>
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-muted" strokeWidth={1.75} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('/wishlist');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full h-11 px-3 rounded border border-line text-left text-[14px] font-bold text-ink hover:bg-primary-tint flex items-center justify-between cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <Heart
+                      className={`w-4 h-4 ${
+                        wishlistCount > 0 ? 'text-sale fill-sale' : 'text-primary-dark'
+                      }`}
+                      strokeWidth={1.75}
+                    />
+                    <span>My Wishlist</span>
+                  </span>
+                  <span className="text-[12px] text-muted">
+                    {activeUserId ? `${wishlistCount} saved` : 'Sign in'}
+                  </span>
+                </button>
+              </div>
             </div>
 
             <div>
@@ -494,10 +525,10 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                 <li>
                   <button
                     type="button"
-                    onClick={() => onNavigate('/track-order')}
+                    onClick={() => onNavigate('/my-orders')}
                     className="hover:text-primary cursor-pointer text-left"
                   >
-                    Track My Order
+                    My Orders &amp; Track My Order
                   </button>
                 </li>
                 <li>
@@ -526,6 +557,17 @@ export const MarketplaceLayout: React.FC<MarketplaceLayoutProps> = ({
                   >
                     Shopping Cart
                   </button>
+                </li>
+                <li className="pt-2 border-t border-white/10 text-surface/90 space-y-1">
+                  <div className="text-[11px] text-muted uppercase font-bold">Phone &amp; WhatsApp</div>
+                  <div>08023384835, 08080949305</div>
+                  <div className="text-[11px] text-muted uppercase font-bold pt-1">Email</div>
+                  <a
+                    href="mailto:myownshop.support@gmail.com"
+                    className="hover:text-primary break-all block"
+                  >
+                    myownshop.support@gmail.com
+                  </a>
                 </li>
               </ul>
             </div>

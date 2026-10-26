@@ -19,11 +19,17 @@ import {
   CheckCircle2,
   AlertCircle,
   LogOut,
+  Plus,
+  FileText,
 } from 'lucide-react';
 import { platformStore } from '../../services/store';
 import { IboProfile, IboListing, ReferralNode, IboCapacityTier } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { PlatformLogo } from '../../components/PlatformLogo';
+import {
+  ProductListingFormPage,
+  IboProductPageSubmission,
+} from '../../components/ProductListingFormPage';
 
 interface IboDashboardScreenProps {
   onNavigate: (path: string) => void;
@@ -106,10 +112,14 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
   const [copiedShopLink, setCopiedShopLink] = useState(false);
   const [copiedReferralLink, setCopiedReferralLink] = useState(false);
 
-  // Markup modal state
+  // Full Product Page & Markup Builder Modal state for IBOs
+  const [isIboProductBuilderOpen, setIsIboProductBuilderOpen] = useState(false);
   const [editingListing, setEditingListing] = useState<IboListing | null>(null);
-  const [markupInput, setMarkupInput] = useState<number>(0);
-  const [markupError, setMarkupError] = useState<string | null>(null);
+  const [preselectedSupplierProductId, setPreselectedSupplierProductId] = useState<string | null>(null);
+  const [catalogFeedback, setCatalogFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   // Merchant curation feedback
   const [curationFeedback, setCurationFeedback] = useState<{
@@ -150,15 +160,22 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
   const totalReferralEarnings = referralNodes.reduce((s, n) => s + n.earnedFromMember, 0);
   const totalAvailable = (wallet?.availableBalance ?? 0) + totalReferralEarnings;
 
-  const handleSaveMarkup = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingListing) return;
-    setMarkupError(null);
-    const result = platformStore.updateIboMarkup(ibo.id, editingListing.productId, markupInput);
+  const handleSaveIboProductPage = (data: IboProductPageSubmission) => {
+    setCatalogFeedback(null);
+    const result = platformStore.upsertIboProductPageListing(ibo.id, data);
     if (!result.success) {
-      setMarkupError(result.error || 'Markup cannot exceed 50% of merchant wholesale price.');
+      setCatalogFeedback({
+        type: 'error',
+        message: result.error || 'Could not publish product page to your shop.',
+      });
     } else {
+      setCatalogFeedback({
+        type: 'success',
+        message: `Product Page completed and published to ${ibo.shopBranding.storeName}!`,
+      });
       setEditingListing(null);
+      setPreselectedSupplierProductId(null);
+      setIsIboProductBuilderOpen(false);
     }
   };
 
@@ -561,34 +578,64 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
             </div>
           )}
 
-          {/* TAB 2: STOREFRONT CATALOG & MARKUP TABLE */}
+          {/* TAB 2: STOREFRONT CATALOG & PRODUCT PAGES TABLE */}
           {activeTab === 'catalog' && (
             <div className="bg-surface border border-line rounded overflow-hidden">
-              <div className="p-4 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="p-4 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h2 className="section-title text-ink">Curated Storefront Products & Markup</h2>
+                  <h2 className="section-title text-ink">
+                    Curated Storefront Products &amp; Product Pages
+                  </h2>
                   <p className="text-[12px] text-muted">
-                    Set your retail markup (up to {config.maxIboMarkupPercentage}% of merchant wholesale price). You keep 100% of your markup on every sale.
+                    Before any item goes live in your shop, complete its online-shopping Product Page (title, key features, specifications, what&apos;s in the box, warranty, and your retail markup up to {config.maxIboMarkupPercentage}%).
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('merchants')}
-                  className="text-[13px] font-bold text-primary-dark hover:underline cursor-pointer"
-                >
-                  Curate Suppliers ({ibo.selectedMerchantIds.length}/{tierConfig.maxSelectableMerchants}) →
-                </button>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('merchants')}
+                    className="px-3 h-10 border border-line bg-surface hover:bg-page text-ink font-bold rounded text-[12px] cursor-pointer"
+                  >
+                    Suppliers ({ibo.selectedMerchantIds.length}/{tierConfig.maxSelectableMerchants})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingListing(null);
+                      setPreselectedSupplierProductId(null);
+                      setIsIboProductBuilderOpen(true);
+                    }}
+                    className="px-3.5 h-10 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded text-[13px] flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" strokeWidth={1.75} />
+                    <span>Complete Product Page &amp; List Item</span>
+                  </button>
+                </div>
               </div>
+
+              {catalogFeedback && (
+                <div
+                  className={`m-4 p-3 rounded border text-[12px] font-bold flex items-center gap-2 ${
+                    catalogFeedback.type === 'success'
+                      ? 'bg-primary-tint border-primary-dark text-primary-dark'
+                      : 'bg-surface border-sale text-sale'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4 shrink-0" strokeWidth={1.75} />
+                  <span>{catalogFeedback.message}</span>
+                </div>
+              )}
+
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-[13px]">
                   <thead>
                     <tr className="bg-page border-b border-line text-[12px] font-bold text-muted uppercase">
-                      <th className="py-3 px-4">Product</th>
+                      <th className="py-3 px-4">Product &amp; Page Status</th>
                       <th className="py-3 px-4">Supplier</th>
                       <th className="py-3 px-4">Wholesale Base</th>
                       <th className="py-3 px-4">Your Markup</th>
                       <th className="py-3 px-4">Retail Shop Price</th>
-                      <th className="py-3 px-4 text-right">Action</th>
+                      <th className="py-3 px-4 text-right">Product Page Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -596,9 +643,30 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
                       const pct = Math.round(
                         (item.iboMarkup / item.product.merchantBasePrice) * 100
                       );
+                      const displayTitle = item.customTitle || item.product.title;
                       return (
                         <tr key={item.id} className="hover:bg-primary-tint/40">
-                          <td className="py-3 px-4 font-bold text-ink">{item.product.title}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={item.product.imageUrl}
+                                alt={displayTitle}
+                                className="w-11 h-11 rounded object-cover border border-line shrink-0"
+                                referrerPolicy="no-referrer"
+                              />
+                              <div>
+                                <div className="font-bold text-ink">{displayTitle}</div>
+                                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                  <span className="text-[11px] text-muted">
+                                    {item.product.brand || item.product.subCategory}
+                                  </span>
+                                  <span className="px-1.5 py-0.5 rounded bg-primary-tint text-primary-dark text-[10px] font-bold">
+                                    Product Page Live
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
                           <td className="py-3 px-4 text-muted">{item.product.merchantName}</td>
                           <td className="py-3 px-4 text-ink">
                             ₦{item.product.merchantBasePrice.toLocaleString()}
@@ -609,19 +677,29 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
                           <td className="py-3 px-4 font-bold text-ink">
                             ₦{item.finalCustomerPrice.toLocaleString()}
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditingListing(item);
-                                setMarkupInput(item.iboMarkup);
-                                setMarkupError(null);
-                              }}
-                              className="text-[12px] font-bold text-primary-dark hover:underline inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" strokeWidth={1.75} />
-                              <span>Adjust Markup</span>
-                            </button>
+                          <td className="py-3 px-4 text-right whitespace-nowrap">
+                            <div className="inline-flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => onNavigate(`/product/${item.productId}`)}
+                                className="px-2.5 h-8 rounded border border-line bg-surface hover:bg-page text-ink font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.75} />
+                                <span>View Page</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingListing(item);
+                                  setPreselectedSupplierProductId(item.productId);
+                                  setIsIboProductBuilderOpen(true);
+                                }}
+                                className="px-2.5 h-8 rounded border border-primary-dark bg-primary-tint text-primary-dark font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <FileText className="w-3.5 h-3.5" strokeWidth={1.75} />
+                                <span>Edit Product Page &amp; Markup</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1278,58 +1356,26 @@ export const IboDashboardScreen: React.FC<IboDashboardScreenProps> = ({ onNaviga
         </main>
       </div>
 
-      {/* Adjust Markup Modal */}
-      {editingListing && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-line rounded max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="section-title text-ink">Adjust Product Markup</h3>
-              <button
-                type="button"
-                onClick={() => setEditingListing(null)}
-                className="text-muted hover:text-ink cursor-pointer"
-              >
-                <X className="w-5 h-5" strokeWidth={1.75} />
-              </button>
-            </div>
-            {markupError && (
-              <div className="p-3 bg-surface border border-sale rounded text-sale text-[12px]">
-                {markupError}
-              </div>
-            )}
-            <form onSubmit={handleSaveMarkup} className="space-y-3.5 text-[13px]">
-              <div className="font-bold text-ink">{editingListing.product.title}</div>
-              <div className="text-[12px] text-muted">
-                Wholesale Price: ₦{editingListing.product.merchantBasePrice.toLocaleString()} • Max 50% Markup: ₦
-                {Math.round(editingListing.product.merchantBasePrice * 0.5).toLocaleString()}
-              </div>
-              <div>
-                <label className="block font-bold text-ink mb-1">Your Markup (₦)</label>
-                <input
-                  type="number"
-                  value={markupInput}
-                  onChange={(e) => setMarkupInput(Number(e.target.value))}
-                  className="w-full h-10 px-3 bg-surface border border-line rounded text-ink"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingListing(null)}
-                  className="px-4 h-10 border border-line rounded text-[13px] font-bold text-ink cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 h-10 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded text-[13px] cursor-pointer"
-                >
-                  Save Markup
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Full Product Page & Markup Builder Modal (IBO) */}
+      {(isIboProductBuilderOpen || editingListing) && (
+        <ProductListingFormPage
+          mode="ibo"
+          iboStoreName={ibo.shopBranding.storeName}
+          maxMarkupPercent={config.maxIboMarkupPercentage}
+          availableSupplierProducts={state.products}
+          initialListing={
+            editingListing ||
+            (preselectedSupplierProductId
+              ? listings.find((l) => l.productId === preselectedSupplierProductId) || null
+              : null)
+          }
+          onClose={() => {
+            setIsIboProductBuilderOpen(false);
+            setEditingListing(null);
+            setPreselectedSupplierProductId(null);
+          }}
+          onSubmitIboListing={handleSaveIboProductPage}
+        />
       )}
 
       {/* Withdrawal Modal */}

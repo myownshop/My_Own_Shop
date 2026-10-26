@@ -101,15 +101,29 @@ export interface Product {
   merchantName: string;
   merchantCode: string;
   title: string;
+  brand?: string;
+  sku?: string;
+  condition?: 'Brand New' | 'Refurbished' | 'Fresh / Organic';
   description: string;
+  keyFeatures?: string[];
+  whatsInTheBox?: string;
   category: string;
   subCategory: string;
   merchantBasePrice: number; // in NGN (₦)
+  recommendedRetailPrice?: number;
   vatIncluded: boolean;
   vatRate: number; // e.g., 0.075 for 7.5%
   fulfillmentType: FulfillmentType;
+  dispatchLocation?: 'Lagos' | 'Abuja' | 'Kano' | 'Port Harcourt' | 'Ibadan';
   stockQty: number;
+  weightKg?: string;
+  dimensions?: string;
+  warranty?: string;
+  returnPolicy?: string;
   imageUrl: string;
+  galleryImages?: string[];
+  specs?: { label: string; value: string }[];
+  variants?: { label: string; options: string[] }[];
   isAvailable: boolean;
   boostedUntil?: string;
   createdAt: string;
@@ -124,6 +138,13 @@ export interface IboListing {
   finalCustomerPrice: number; // merchantBasePrice + (vat if any) + iboMarkup
   isFeaturedInShop: boolean;
   displayOrder: number;
+  isProductPageCompleted?: boolean;
+  customTitle?: string;
+  customDescription?: string;
+  customKeyFeatures?: string[];
+  customWhatsInTheBox?: string;
+  customWarranty?: string;
+  customSpecs?: { label: string; value: string }[];
 }
 
 export type IboCapacityTier = 'free' | 'tier_2' | 'tier_3';

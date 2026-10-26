@@ -17,11 +17,17 @@ import {
   QrCode,
   Megaphone,
   LogOut,
+  ExternalLink,
+  FileText,
 } from 'lucide-react';
 import { platformStore } from '../../services/store';
-import { Product, FulfillmentType, MerchantTier, Order } from '../../types';
+import { Product, MerchantTier, Order } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { PlatformLogo } from '../../components/PlatformLogo';
+import {
+  ProductListingFormPage,
+  MerchantProductPageSubmission,
+} from '../../components/ProductListingFormPage';
 
 interface MerchantPortalScreenProps {
   onNavigate: (path: string) => void;
@@ -104,25 +110,10 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
   const [waybillOrder, setWaybillOrder] = useState<Order | null>(null);
   const [waybillFeedback, setWaybillFeedback] = useState<string | null>(null);
 
-  // Add Product Modal
+  // Full Product Page Builder Modal (Add or Edit Product)
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('electronics');
-  const [subCategory, setSubCategory] = useState('Smartphones & Power');
-  const [basePrice, setBasePrice] = useState<number>(25000);
-  const [vatIncluded, setVatIncluded] = useState(true);
-  const [fulfillmentType, setFulfillmentType] = useState<FulfillmentType>('warehouse_deposit');
-  const [stockQty, setStockQty] = useState<number>(50);
-  const [imageUrl, setImageUrl] = useState(
-    'https://images.unsplash.com/photo-1592417817098-8f3d6eb2252c?w=600&auto=format&fit=crop&q=80'
-  );
-  const [productError, setProductError] = useState<string | null>(null);
-
-  // Edit Stock/Price Modal
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [editStockQty, setEditStockQty] = useState<number>(0);
-  const [editBasePrice, setEditBasePrice] = useState<number>(0);
+  const [productError, setProductError] = useState<string | null>(null);
 
   // Create IBO Ad Campaign Modal
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
@@ -166,46 +157,79 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
     }
   };
 
-  const handleCreateProduct = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveMerchantProductPage = (data: MerchantProductPageSubmission) => {
     setProductError(null);
-    if (merchantProducts.length >= tierConfig.maxActiveProducts) {
+    if (!editingProduct && merchantProducts.length >= tierConfig.maxActiveProducts) {
       setProductError(
         `Tier limit reached (${tierConfig.maxActiveProducts} products). Upgrade tier to add more.`
       );
       return;
     }
-    if (!title || !basePrice) return;
-    platformStore.addProduct({
-      merchantId: merchant.id,
-      merchantName: merchant.businessName,
-      merchantCode: merchant.code,
-      title,
-      description,
-      category,
-      subCategory,
-      merchantBasePrice: basePrice,
-      vatIncluded,
-      vatRate: 0.075,
-      fulfillmentType,
-      stockQty,
-      imageUrl,
-      isAvailable: true,
-    });
-    setIsAddProductOpen(false);
-    setTitle('');
-    setDescription('');
-  };
 
-  const handleUpdateProductStockPrice = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingProduct) return;
-    platformStore.updateProduct(editingProduct.id, {
-      stockQty: Math.max(0, editStockQty),
-      merchantBasePrice: Math.max(100, editBasePrice),
-      isAvailable: editStockQty > 0,
-    });
-    setEditingProduct(null);
+    if (editingProduct) {
+      platformStore.updateProduct(editingProduct.id, {
+        title: data.title,
+        brand: data.brand,
+        sku: data.sku,
+        condition: data.condition,
+        category: data.category,
+        subCategory: data.subCategory,
+        description: data.description,
+        keyFeatures: data.keyFeatures,
+        whatsInTheBox: data.whatsInTheBox,
+        merchantBasePrice: data.merchantBasePrice,
+        recommendedRetailPrice: data.recommendedRetailPrice,
+        vatIncluded: data.vatIncluded,
+        fulfillmentType: data.fulfillmentType,
+        stockQty: data.stockQty,
+        dispatchLocation: data.dispatchLocation,
+        weightKg: data.weightKg,
+        dimensions: data.dimensions,
+        warranty: data.warranty,
+        returnPolicy: data.returnPolicy,
+        imageUrl: data.imageUrl,
+        galleryImages: data.galleryImages,
+        specs: data.specs,
+        variants: data.variants,
+        isAvailable: data.stockQty > 0,
+        isProductPageCompleted: true,
+      });
+      setEditingProduct(null);
+      setIsAddProductOpen(false);
+    } else {
+      platformStore.addProduct({
+        merchantId: merchant.id,
+        merchantName: merchant.businessName,
+        merchantCode: merchant.code,
+        title: data.title,
+        brand: data.brand,
+        sku: data.sku,
+        condition: data.condition,
+        description: data.description,
+        keyFeatures: data.keyFeatures,
+        whatsInTheBox: data.whatsInTheBox,
+        category: data.category,
+        subCategory: data.subCategory,
+        merchantBasePrice: data.merchantBasePrice,
+        recommendedRetailPrice: data.recommendedRetailPrice,
+        vatIncluded: data.vatIncluded,
+        vatRate: 0.075,
+        fulfillmentType: data.fulfillmentType,
+        stockQty: data.stockQty,
+        dispatchLocation: data.dispatchLocation,
+        weightKg: data.weightKg,
+        dimensions: data.dimensions,
+        warranty: data.warranty,
+        returnPolicy: data.returnPolicy,
+        imageUrl: data.imageUrl,
+        galleryImages: data.galleryImages,
+        specs: data.specs,
+        variants: data.variants,
+        isAvailable: data.stockQty > 0,
+        isProductPageCompleted: true,
+      });
+      setIsAddProductOpen(false);
+    }
   };
 
   const handleCreateCampaign = (e: React.FormEvent) => {
@@ -616,20 +640,32 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
             <div className="bg-surface border border-line rounded overflow-hidden">
               <div className="p-4 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h2 className="section-title text-ink">Wholesale Product Catalog</h2>
+                  <h2 className="section-title text-ink">
+                    Wholesale Product Catalog &amp; Product Pages
+                  </h2>
                   <p className="text-[12px] text-muted">
-                    Using {merchantProducts.length} of {tierConfig.maxActiveProducts} active SKU slots on {tierConfig.name}.
+                    Every item requires a completed online-shopping Product Page (photos, key features, specifications, what&apos;s in the box, and warranty) before listing. Using {merchantProducts.length} of {tierConfig.maxActiveProducts} active slots on {tierConfig.name}.
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsAddProductOpen(true)}
-                  className="px-3.5 h-10 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded text-[13px] flex items-center gap-1.5 cursor-pointer"
+                  onClick={() => {
+                    setEditingProduct(null);
+                    setProductError(null);
+                    setIsAddProductOpen(true);
+                  }}
+                  className="px-3.5 h-10 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded text-[13px] flex items-center gap-1.5 cursor-pointer shrink-0"
                 >
                   <Plus className="w-4 h-4" strokeWidth={1.75} />
-                  <span>Add New SKU</span>
+                  <span>Create Product Page &amp; List Item</span>
                 </button>
               </div>
+
+              {productError && (
+                <div className="m-4 p-3 bg-surface border border-sale rounded text-sale text-[12px] font-bold">
+                  {productError}
+                </div>
+              )}
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-[13px]">
@@ -641,11 +677,11 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
                           onClick={() => toggleSort('title')}
                           className="flex items-center gap-1 hover:text-ink cursor-pointer"
                         >
-                          <span>Product</span>
+                          <span>Product &amp; Page Status</span>
                           <ArrowUpDown className="w-3.5 h-3.5" strokeWidth={1.75} />
                         </button>
                       </th>
-                      <th className="py-3 px-4">Category</th>
+                      <th className="py-3 px-4">Category &amp; Brand</th>
                       <th className="py-3 px-4">Fulfillment</th>
                       <th className="py-3 px-4">
                         <button
@@ -667,7 +703,7 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
                           <ArrowUpDown className="w-3.5 h-3.5" strokeWidth={1.75} />
                         </button>
                       </th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 text-right">Product Page Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -678,16 +714,27 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
                             <img
                               src={p.imageUrl}
                               alt={p.title}
-                              className="w-10 h-10 rounded object-cover border border-line shrink-0"
+                              className="w-11 h-11 rounded object-cover border border-line shrink-0"
                               referrerPolicy="no-referrer"
                             />
                             <div>
                               <div className="font-bold text-ink">{p.title}</div>
-                              <div className="text-[11px] text-muted">{p.subCategory}</div>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                <span className="text-[11px] text-muted">{p.subCategory}</span>
+                                <span className="px-1.5 py-0.5 rounded bg-primary-tint text-primary-dark text-[10px] font-bold">
+                                  Product Page Live
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 capitalize text-muted">{p.category}</td>
+                        <td className="py-3 px-4">
+                          <div className="capitalize font-medium text-ink">{p.category}</div>
+                          <div className="text-[11px] text-muted">
+                            {p.brand || merchant.businessName.split(' ')[0]}
+                            {p.sku ? ` • ${p.sku}` : ''}
+                          </div>
+                        </td>
                         <td className="py-3 px-4">
                           <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-primary-tint border border-primary-dark text-primary-dark">
                             {p.fulfillmentType === 'warehouse_deposit'
@@ -700,18 +747,28 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
                         </td>
                         <td className="py-3 px-4 font-bold text-ink">{p.stockQty} units</td>
                         <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingProduct(p);
-                              setEditStockQty(p.stockQty);
-                              setEditBasePrice(p.merchantBasePrice);
-                            }}
-                            className="text-[12px] font-bold text-primary-dark hover:underline inline-flex items-center gap-1 cursor-pointer"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" strokeWidth={1.75} />
-                            <span>Edit Price / Stock</span>
-                          </button>
+                          <div className="inline-flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onNavigate(`/product/${p.id}`)}
+                              className="px-2.5 h-8 rounded border border-line bg-surface hover:bg-page text-ink font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" strokeWidth={1.75} />
+                              <span>View Page</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingProduct(p);
+                                setProductError(null);
+                                setIsAddProductOpen(true);
+                              }}
+                              className="px-2.5 h-8 rounded border border-primary-dark bg-primary-tint text-primary-dark font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5" strokeWidth={1.75} />
+                              <span>Edit Product Page</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1183,145 +1240,19 @@ export const MerchantPortalScreen: React.FC<MerchantPortalScreenProps> = ({ onNa
         </div>
       )}
 
-      {/* Add Product Modal */}
-      {isAddProductOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-line rounded max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="section-title text-ink">Add Wholesale Product</h3>
-              <button
-                type="button"
-                onClick={() => setIsAddProductOpen(false)}
-                className="text-muted hover:text-ink cursor-pointer"
-              >
-                <X className="w-5 h-5" strokeWidth={1.75} />
-              </button>
-            </div>
-
-            {productError && (
-              <div className="p-3 bg-surface border border-sale rounded text-sale text-[12px]">
-                {productError}
-              </div>
-            )}
-
-            <form onSubmit={handleCreateProduct} className="space-y-3.5 text-[13px]">
-              <div>
-                <label className="block font-bold text-ink mb-1">Product Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Samsung 43-Inch Smart LED TV"
-                  className="w-full h-10 px-3 bg-surface border border-line rounded text-ink"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-ink mb-1">Wholesale Price (₦) *</label>
-                  <input
-                    type="number"
-                    required
-                    value={basePrice}
-                    onChange={(e) => setBasePrice(Number(e.target.value))}
-                    className="w-full h-10 px-3 bg-surface border border-line rounded text-ink"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-ink mb-1">Available Stock *</label>
-                  <input
-                    type="number"
-                    required
-                    value={stockQty}
-                    onChange={(e) => setStockQty(Number(e.target.value))}
-                    className="w-full h-10 px-3 bg-surface border border-line rounded text-ink"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block font-bold text-ink mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Key specifications and warranty info"
-                  className="w-full p-2.5 bg-surface border border-line rounded text-ink"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddProductOpen(false)}
-                  className="px-4 h-10 border border-line rounded text-[13px] font-bold text-ink cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 h-10 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded text-[13px] cursor-pointer"
-                >
-                  Save Product
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Product Stock/Price Modal */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-surface border border-line rounded max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="section-title text-ink">Update SKU</h3>
-              <button
-                type="button"
-                onClick={() => setEditingProduct(null)}
-                className="text-muted hover:text-ink cursor-pointer"
-              >
-                <X className="w-5 h-5" strokeWidth={1.75} />
-              </button>
-            </div>
-            <form onSubmit={handleUpdateProductStockPrice} className="space-y-3.5 text-[13px]">
-              <div className="font-bold text-ink">{editingProduct.title}</div>
-              <div>
-                <label className="block font-bold text-ink mb-1">
-                  Wholesale Base Price (₦)
-                </label>
-                <input
-                  type="number"
-                  value={editBasePrice}
-                  onChange={(e) => setEditBasePrice(Number(e.target.value))}
-                  className="w-full h-10 px-3 bg-surface border border-line rounded text-ink"
-                />
-              </div>
-              <div>
-                <label className="block font-bold text-ink mb-1">Stock Quantity</label>
-                <input
-                  type="number"
-                  value={editStockQty}
-                  onChange={(e) => setEditStockQty(Number(e.target.value))}
-                  className="w-full h-10 px-3 bg-surface border border-line rounded text-ink"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingProduct(null)}
-                  className="px-4 h-10 border border-line rounded text-[13px] font-bold text-ink cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 h-10 bg-primary hover:bg-primary-dark text-on-primary font-bold rounded text-[13px] cursor-pointer"
-                >
-                  Update SKU
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Full Product Page Builder & Listing Form Modal (Merchant) */}
+      {(isAddProductOpen || editingProduct) && (
+        <ProductListingFormPage
+          mode="merchant"
+          merchantName={merchant.businessName}
+          merchantState={merchant.state || 'Lagos'}
+          initialProduct={editingProduct}
+          onClose={() => {
+            setIsAddProductOpen(false);
+            setEditingProduct(null);
+          }}
+          onSubmitMerchantProduct={handleSaveMerchantProductPage}
+        />
       )}
 
       {/* Payout Modal */}

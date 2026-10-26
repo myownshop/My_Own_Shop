@@ -228,7 +228,9 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                     {product.brand}
                   </button>
                   <span>·</span>
-                  <span>Item ID: {product.id.toUpperCase()}</span>
+                  <span>SKU: {product.sku || product.id.toUpperCase()}</span>
+                  <span>·</span>
+                  <span>{product.condition || 'Brand New'}</span>
                   <span>·</span>
                   <span>{product.sellerType}</span>
                 </div>
@@ -280,8 +282,29 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 )}
               </div>
 
+              {/* Key Features / Highlights (Online Shopping Style) */}
+              <div className="p-3 bg-page border border-line rounded space-y-1.5 text-[13px]">
+                <div className="text-[11px] font-bold text-ink uppercase">
+                  Key Features &amp; Highlights
+                </div>
+                <ul className="list-disc pl-4 space-y-1 text-ink">
+                  {(product.keyFeatures && product.keyFeatures.length > 0
+                    ? product.keyFeatures
+                    : [
+                        `Genuine ${product.brand} product verified at our ${product.location} center`,
+                        product.specs[0]
+                          ? `${product.specs[0].label}: ${product.specs[0].value}`
+                          : '100% quality checked before dispatch',
+                        product.warranty || 'Protected by Safe Payment & 7-Day Easy Return',
+                      ]
+                  ).map((feat, i) => (
+                    <li key={i}>{feat}</li>
+                  ))}
+                </ul>
+              </div>
+
               {/* Variant Chips */}
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3 pt-1">
                 {product.variants.map((variant) => (
                   <div key={variant.label}>
                     <div className="text-[12px] font-bold text-ink uppercase mb-1.5">
@@ -545,14 +568,37 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         <div className="p-4 sm:p-6">
           {activeTab === 'description' && (
-            <div className="space-y-3 max-w-3xl text-[14px] text-ink">
-              <h2 className="section-title">Product Overview</h2>
-              <p>{product.description}</p>
-              <ul className="list-disc pl-5 space-y-1 text-muted">
-                <li>Sold by {product.merchantName} ({product.merchantCode}).</li>
-                <li>Checked for quality at our {product.location} center before shipping.</li>
-                <li>Safe payment protection: seller is paid only when your order arrives.</li>
-              </ul>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 text-[14px] text-ink">
+              <div className="md:col-span-8 space-y-3">
+                <h2 className="section-title">Product Overview</h2>
+                <p className="leading-relaxed whitespace-pre-line">{product.description}</p>
+                <ul className="list-disc pl-5 space-y-1 text-muted">
+                  <li>Sold by {product.merchantName} ({product.merchantCode}).</li>
+                  <li>Checked for quality at our {product.location} center before shipping.</li>
+                  <li>Safe payment protection: seller is paid only when your order arrives.</li>
+                </ul>
+              </div>
+
+              <div className="md:col-span-4 space-y-3">
+                <div className="p-4 bg-page border border-line rounded space-y-2 text-[13px]">
+                  <h3 className="font-bold text-ink uppercase text-[12px]">
+                    What's in the Box
+                  </h3>
+                  <p className="text-ink">
+                    {product.whatsInTheBox ||
+                      `1x ${product.title}, User Guide & Official Warranty Slip`}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-page border border-line rounded space-y-2 text-[13px]">
+                  <h3 className="font-bold text-ink uppercase text-[12px]">
+                    Warranty &amp; Support
+                  </h3>
+                  <p className="text-ink">
+                    {product.warranty || '7-Day Free Return & Official Quality Guarantee'}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

@@ -240,10 +240,16 @@ export const InfoPagesScreen: React.FC<InfoPagesScreenProps> = ({ page, onNaviga
 
                 {/* Need more help */}
                 <div className="p-4 bg-page border border-line rounded flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
+                  <div className="space-y-1">
                     <div className="font-bold text-[14px] text-ink">Still need help with an order?</div>
                     <p className="text-[12px] text-muted">
-                      Our support team is available Monday to Saturday, 8 AM – 8 PM.
+                      Call or WhatsApp: <span className="font-bold text-ink">08023384835, 08080949305</span> · Email:{' '}
+                      <a
+                        href="mailto:myownshop.support@gmail.com"
+                        className="font-bold text-primary-dark hover:underline"
+                      >
+                        myownshop.support@gmail.com
+                      </a>
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -831,17 +837,51 @@ export const InfoPagesScreen: React.FC<InfoPagesScreenProps> = ({ page, onNaviga
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px]">
-                  <div className="border border-line rounded p-4 space-y-1">
+                  <div className="border border-line rounded p-4 space-y-1.5">
                     <Phone className="w-5 h-5 text-primary-dark" strokeWidth={1.75} />
                     <div className="font-bold text-ink">Phone &amp; WhatsApp</div>
-                    <div className="text-muted">+234 700 426 4820</div>
+                    <div className="text-ink font-medium">
+                      <a href="tel:08023384835" className="hover:text-primary-dark hover:underline">
+                        08023384835
+                      </a>
+                      {', '}
+                      <a href="tel:08080949305" className="hover:text-primary-dark hover:underline">
+                        08080949305
+                      </a>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1 text-[12px]">
+                      <a
+                        href="https://wa.me/2348023384835"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary-dark font-bold hover:underline"
+                      >
+                        WhatsApp Line 1
+                      </a>
+                      <span className="text-muted">·</span>
+                      <a
+                        href="https://wa.me/2348080949305"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary-dark font-bold hover:underline"
+                      >
+                        WhatsApp Line 2
+                      </a>
+                    </div>
                   </div>
-                  <div className="border border-line rounded p-4 space-y-1">
+                  <div className="border border-line rounded p-4 space-y-1.5">
                     <Mail className="w-5 h-5 text-primary-dark" strokeWidth={1.75} />
                     <div className="font-bold text-ink">Email Support</div>
-                    <div className="text-muted">support@ibohub.ng</div>
+                    <div className="text-ink font-medium break-all">
+                      <a
+                        href="mailto:myownshop.support@gmail.com"
+                        className="hover:text-primary-dark hover:underline"
+                      >
+                        myownshop.support@gmail.com
+                      </a>
+                    </div>
                   </div>
-                  <div className="border border-line rounded p-4 space-y-1">
+                  <div className="border border-line rounded p-4 space-y-1.5">
                     <MapPin className="w-5 h-5 text-primary-dark" strokeWidth={1.75} />
                     <div className="font-bold text-ink">Main Pickup Center</div>
                     <div className="text-muted">Plot 14, Simbiat Abiola Rd, Ikeja, Lagos</div>
